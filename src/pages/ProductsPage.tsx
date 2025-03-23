@@ -2,14 +2,13 @@ import { ResourceTable } from '../helpers/ResourceTable';
 import { useGetProducts, useDeleteProduct, Product } from '../api/products';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '../components/ui/badge';
-import { Column } from '../helpers/ResourceTable';
 
 export function ProductsPage() {
   const { data: products = [], isLoading } = useGetProducts();
   const deleteProduct = useDeleteProduct();
   const navigate = useNavigate();
 
-  const columns: Column<Product>[] = [
+  const columns = [
     {
       header: 'ID',
       accessorKey: 'id',
@@ -68,7 +67,7 @@ export function ProductsPage() {
   return (
     <div className="container mx-auto py-6">
       <ResourceTable<Product>
-        data={products}
+        data={Array.isArray(products) ? products : products.results || []}
         columns={columns}
         isLoading={isLoading}
         onEdit={handleEdit}

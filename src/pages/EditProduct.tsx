@@ -46,7 +46,12 @@ export function EditProduct() {
         defaultValues={product}
         onSubmit={async (data) => {
           try {
-            await updateProduct.mutateAsync({ ...data, id: Number(id) });
+            await updateProduct.mutateAsync({ 
+              ...data, 
+              id: Number(id),
+              created_at: product.created_at,
+              updated_at: product.updated_at
+            } as any);
             navigate('/products');
           } catch (error) {
             console.error('Failed to update product:', error);
