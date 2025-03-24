@@ -36,11 +36,13 @@ const productSchema = z.object({
   material: z.coerce.number().min(1, 'Material is required'),
   price: z.coerce.number().min(0, 'Price must be positive'),
   quantity: z.coerce.number().min(0, 'Quantity must be positive'),
+  new_price: z.coerce.number().min(0, 'New price must be positive').optional(),
   product_attributes: z.array(z.object({
     color: z.string().min(1, 'Color is required'),
-    image: z.instanceof(File).refine(file => file.size > 0, {
-      message: 'Image is required'
-    }),
+    image: z.union([
+      z.instanceof(File),
+      z.string() // Allow string for existing image URLs
+    ]),
     size: z.coerce.number().min(1, 'Size is required'),
   })).min(1, 'At least one product attribute is required'),
 });
@@ -57,19 +59,32 @@ export function ProductForm({
   materials,
   sizes,
 }: ProductFormProps) {
+  console.log('A. ProductForm received defaultValues:', defaultValues);
+
   const form = useForm<ProductFormSchema>({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      ...defaultValues,
+      brand: defaultValues?.brand,
+      category: defaultValues?.category,
+      title_uz: defaultValues?.title_uz,
+      title_ru: defaultValues?.title_ru,
+      description_uz: defaultValues?.description_uz,
+      description_ru: defaultValues?.description_ru,
+      material: defaultValues?.material,
+      price: defaultValues?.price,
+      quantity: defaultValues?.quantity,
+      new_price: defaultValues?.new_price,
       product_attributes: defaultValues?.product_attributes 
         ? defaultValues.product_attributes.map(attr => ({
             color: attr.color,
-            size: attr.size || 0, // Provide a default value to satisfy the type
-            image: new File([], 'placeholder.jpg')
+            size: attr.sizes[0], // Take the first size from the array
+            image: attr.image // Use the image URL
           }))
-        : [{ color: '', image: new File([], 'placeholder.jpg'), size: 0 }], // Use 0 instead of undefined
+        : [{ color: '', image: new File([], 'placeholder.jpg'), size: 0 }],
     },
   });
+
+  console.log('C. Form initialized with values:', form.getValues());
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -77,11 +92,18 @@ export function ProductForm({
   });
 
   const validateAndSubmit = async (data: ProductFormSchema) => {
-    const hasEmptyFile = data.product_attributes.some(
-      attr => !attr.image || attr.image.size === 0
+    console.log('D. ValidateAndSubmit received data:', data);
+    
+    const hasInvalidImage = data.product_attributes.some(
+      attr => {
+        const isInvalid = !(attr.image instanceof File || typeof attr.image === 'string');
+        console.log('E. Checking image validity:', { attr, isInvalid });
+        return isInvalid;
+      }
     );
     
-    if (hasEmptyFile) {
+    if (hasInvalidImage) {
+      console.log('F. Invalid image found');
       form.setError('product_attributes', {
         type: 'manual',
         message: 'All product attributes must have an image'
@@ -89,20 +111,20 @@ export function ProductForm({
       return;
     }
     
-    const hasMissingSize = data.product_attributes.some(
-      attr => !attr.size
-    );
+    // Convert the data to match ProductFormData interface
+    const formData: ProductFormData = {
+      ...data,
+      id: defaultValues?.id, // Make sure to include the ID
+      product_attributes: data.product_attributes.map(attr => ({
+        color: attr.color,
+        // Only create new File if it's not already a string (existing image URL)
+        image: typeof attr.image === 'string' ? new File([], attr.image) : attr.image,
+        size: attr.size
+      }))
+    };
     
-    if (hasMissingSize) {
-      form.setError('product_attributes', {
-        type: 'manual',
-        message: 'All product attributes must have a size'
-      });
-      return;
-    }
-    
-    // Cast the validated data to ProductFormData before passing to onSubmit
-    onSubmit(data as unknown as ProductFormData);
+    console.log('G. Calling onSubmit with formData:', formData);
+    onSubmit(formData);
   };
 
   return (
@@ -292,6 +314,28 @@ export function ProductForm({
           </div>
         </div>
 
+        {/* Add new price field after price */}
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="new_price"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>New Price (Sale Price)</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="Если добавите новую цену, то это будет распродажа" 
+                    {...field} 
+                    value={field.value || ''} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
         {/* Product Attributes */}
         <div className="space-y-4">
           <div className="flex justify-between items-center">
@@ -314,7 +358,7 @@ export function ProductForm({
                   <FormItem className="flex-1">
                     <FormLabel>Color</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} type="color" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -355,10 +399,25 @@ export function ProductForm({
                 render={({ field }) => (
                   <FormItem className="flex-1">
                     <FormLabel>Image</FormLabel>
+                    {typeof field.value === 'string' && (
+                      <div className="mb-2">
+                        <img 
+                          src={field.value} 
+                          alt="Product" 
+                          className="w-20 h-20 object-cover rounded"
+                        />
+                      </div>
+                    )}
                     <FormControl>
                       <Input
                         type="file"
-                        onChange={(e) => field.onChange(e.target.files?.[0])}
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            field.onChange(file);
+                          }
+                        }}
                       />
                     </FormControl>
                     <FormMessage />

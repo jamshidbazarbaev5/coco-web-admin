@@ -37,7 +37,7 @@ export function ProductsPage() {
           {product.product_attributes.map((attr, index) => (
             <Badge key={index} variant="outline" className="text-xs">
               {attr.color}
-              {attr.size ? ` - ${attr.size}` : ''}
+              {attr.sizes.length > 0 ? ` - ${attr.sizes.join(', ')}` : ''}
             </Badge>
           ))}
         </div>
@@ -46,12 +46,12 @@ export function ProductsPage() {
     {
       header: 'Created At',
       accessorKey: (product: Product) => 
-        new Date(product.created_at).toLocaleDateString(),
+        product.created_at ? new Date(product.created_at).toLocaleDateString() : '-',
     },
   ];
 
   const handleEdit = (product: Product) => {
-    navigate(`/products/edit/${product.id}`);
+    navigate(`/edit-product/${product.id}`);
   };
 
   const handleDelete = async (id: number) => {

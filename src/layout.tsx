@@ -27,7 +27,8 @@ export default function Layout({ children }: LayoutProps) {
     { icon: BarChart3, label: 'Sizes', href: '/sizes' },
     { icon: User, label: 'Contact Details', href: '/details' },
     { icon: Mail, label: 'Feedback', href: '/feedback' },
-    { icon: ShoppingBag, label: 'Orders', href: '/orders' }
+    { icon: ShoppingBag, label: 'Orders', href: '/orders' },
+    { icon: ShoppingBag, label: 'Products', href: '/products' }
   ];
 
   return (

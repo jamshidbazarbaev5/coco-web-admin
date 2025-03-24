@@ -17,20 +17,22 @@ export interface ProductFormData {
   description_ru: string;
   material: number;
   price: number;
+  new_price?: number; // Add new_price field
   quantity: number;
   product_attributes: ProductAttribute[];
 }
 
 export interface Product extends Omit<ProductFormData, 'product_attributes'> {
   id: number;
+  new_price?: number; // Add new_price field
   product_attributes: Array<{
-    id: number;
     color: string;
     image: string;
-    size?: number;
+    sizes: number[]; // Changed from size?: number to sizes: number[]
   }>;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
+  on_sale?: boolean;
 }
 
 // API endpoints
@@ -59,22 +61,24 @@ export const createProductFormData = (productData: ProductFormData): FormData =>
   formData.append('description_ru', productData.description_ru);
   formData.append('material', productData.material.toString());
   formData.append('price', productData.price.toString());
+  if (productData.new_price) {
+    formData.append('new_price', productData.new_price.toString());
+  }
   formData.append('quantity', productData.quantity.toString());
   
   // Add product attributes
   productData.product_attributes.forEach((attr, index) => {
     formData.append(`product_attributes[${index}][color]`, attr.color);
+  
     
-    // Make sure the image is a valid file
+   
     if (attr.image && attr.image.size > 0) {
-      formData.append(`product_attributes[${index}][image]`, attr.image);
-    }
+      formData.append(`product_attributes[${index}]image`, attr.image);
     
-    // Make sure size is included and use the correct field name
-    if (attr.size) {
+      if (attr.size) {
       formData.append(`product_attributes[${index}][uploaded_sizes]`, attr.size.toString());
     }
-  });
+  }});
   
   // Log the form data for debugging
   console.log('Form data being sent:', Object.fromEntries(formData.entries()));

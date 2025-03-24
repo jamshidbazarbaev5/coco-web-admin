@@ -14,6 +14,7 @@ import { ContactDetailsPage } from "./pages/Details";
 import { CreateProduct } from "./pages/CreateProduct";
 import { EditProduct } from "./pages/EditProduct";
 import { Orders } from "./pages/Order";
+import { ProductsPage } from "./pages/ProductsPage";
 const queryClient = new QueryClient()
 
 function App() {
@@ -40,6 +41,7 @@ function App() {
           <Route path="/create-product" element={<CreateProduct />} />
           <Route path="/edit-product/:id" element={<EditProduct />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/products" element={<ProductsPage />} />
         </Route>
       </Routes>
     </QueryClientProvider>
