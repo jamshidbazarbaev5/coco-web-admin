@@ -43,11 +43,7 @@ export function ProductsPage() {
         </div>
       ),
     },
-    {
-      header: 'Created At',
-      accessorKey: (product: Product) => 
-        product.created_at ? new Date(product.created_at).toLocaleDateString() : '-',
-    },
+    
   ];
 
   const handleEdit = (product: Product) => {
@@ -61,7 +57,7 @@ export function ProductsPage() {
   };
 
   const handleAdd = () => {
-    navigate('/products/new');
+    navigate('/create-product');
   };
 
   return (

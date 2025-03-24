@@ -35,10 +35,8 @@ export interface Product extends Omit<ProductFormData, 'product_attributes'> {
   on_sale?: boolean;
 }
 
-// API endpoints
 const PRODUCT_URL = 'products/crud/product/';
 
-// Create API hooks for Product resource
 export const {
   useGetResources: useGetProducts,
   useGetResource: useGetProduct,
@@ -51,7 +49,6 @@ export const {
 export const createProductFormData = (productData: ProductFormData): FormData => {
   const formData = new FormData();
   
-  // Add basic product fields
   if (productData.id) formData.append('id', productData.id.toString());
   formData.append('brand', productData.brand.toString());
   formData.append('category', productData.category.toString());
@@ -66,9 +63,8 @@ export const createProductFormData = (productData: ProductFormData): FormData =>
   }
   formData.append('quantity', productData.quantity.toString());
   
-  // Add product attributes
   productData.product_attributes.forEach((attr, index) => {
-    formData.append(`product_attributes[${index}][color]`, attr.color);
+    formData.append(`product_attributes[${index}]color`, attr.color);
   
     
    
@@ -76,11 +72,10 @@ export const createProductFormData = (productData: ProductFormData): FormData =>
       formData.append(`product_attributes[${index}]image`, attr.image);
     
       if (attr.size) {
-      formData.append(`product_attributes[${index}][uploaded_sizes]`, attr.size.toString());
+      formData.append(`product_attributes[${index}]uploaded_sizes`, attr.size.toString());
     }
   }});
   
-  // Log the form data for debugging
   console.log('Form data being sent:', Object.fromEntries(formData.entries()));
   
   return formData;

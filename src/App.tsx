@@ -10,11 +10,12 @@ import { SizesPage } from "./pages/sizes";
 import { BrandsPage } from "./pages/Brands";
 import { MaterialsPage } from "./pages/Material";
 import { CategoryPage } from "./pages/Categories";
-import { ContactDetailsPage } from "./pages/Details";
+import {Details} from "./pages/Details";
 import { CreateProduct } from "./pages/CreateProduct";
 import { EditProduct } from "./pages/EditProduct";
 import { Orders } from "./pages/Order";
 import { ProductsPage } from "./pages/ProductsPage";
+import CollectionForm from "./pages/CollectionForm";
 const queryClient = new QueryClient()
 
 function App() {
@@ -37,10 +38,11 @@ function App() {
           <Route path="/brands" element={<BrandsPage />} />
           <Route path="/categories" element={<CategoryPage />} />
           <Route path="/materials" element={<MaterialsPage />} />
-          <Route path="/details" element={<ContactDetailsPage />} />
+          <Route path="/details" element={<Details />} />
           <Route path="/create-product" element={<CreateProduct />} />
           <Route path="/edit-product/:id" element={<EditProduct />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/collections" element={<CollectionForm />} />
           <Route path="/products" element={<ProductsPage />} />
         </Route>
       </Routes>

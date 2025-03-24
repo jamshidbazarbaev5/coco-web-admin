@@ -1,7 +1,4 @@
 import { 
-  Home,
-  PieChart,
-  Package,
   Tags,
   Box,
   ShoppingBag,
@@ -10,6 +7,7 @@ import {
   Mail,
 } from 'lucide-react';
 import { ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
 
 // Add props interface to accept children
 interface LayoutProps {
@@ -17,10 +15,10 @@ interface LayoutProps {
 }
 
 export default function Layout({ children }: LayoutProps) {
+  const location = useLocation();
+  
   const navItems = [
-    { icon: Home, label: 'Dashboard', href: '/', active: true },
-    { icon: PieChart, label: 'Analytics', href: '/analytics' },
-    { icon: Package, label: 'Create Product', href: '/create-product' },
+    { icon: ShoppingBag, label: 'Collections', href: '/collections' },
     { icon: Tags, label: 'Categories', href: '/categories' },
     { icon: Box, label: 'Materials', href: '/materials' },
     { icon: ShoppingBag, label: 'Brands', href: '/brands' },
@@ -54,13 +52,13 @@ export default function Layout({ children }: LayoutProps) {
               key={index}
               href={item.href}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left mb-1 transition-colors
-                ${item.active 
+                ${location.pathname === item.href
                   ? 'bg-emerald-100 text-emerald-700' 
                   : 'text-gray-700 hover:bg-gray-100'}`}
             >
-              <item.icon size={20} className={item.active ? 'text-emerald-500' : 'text-gray-500'} />
+              <item.icon size={20} className={location.pathname === item.href ? 'text-emerald-500' : 'text-gray-500'} />
               <span className="font-medium">{item.label}</span>
-              {item.active && (
+              {location.pathname === item.href && (
                 <span className="ml-auto">
                   <svg 
                     width="16" 

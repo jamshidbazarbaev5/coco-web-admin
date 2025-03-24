@@ -3,10 +3,19 @@ import { createResourceApiHooks } from '../hooks/createResourceApiHooks';
 interface OrderItem {
   product: number;
   quantity: number;
+  subtotal?: number;
+  total_sum?: number;
+  created_at?: string;
+  status?: string;
 }
 
 export interface Order {
   id?: number;
+  subtotal?: number;
+  total_sum?: number;
+  created_at?: string;
+  status?: string;
+
   customer_name: string;
   customer_phone: string;
   customer_preferences: string;
