@@ -22,6 +22,7 @@ export interface FormField {
   options?: { value: string | number; label: string }[];
   required?: boolean;
   validation?: (schema: z.ZodTypeAny) => z.ZodTypeAny;
+  readOnly?: boolean;
 }
 
 interface ResourceFormProps<T> {
@@ -30,6 +31,7 @@ interface ResourceFormProps<T> {
   defaultValues?: Partial<T>;
   isSubmitting?: boolean;
   title: string;
+  hideSubmitButton?: boolean;
 }
 
 export function ResourceForm<T>({
@@ -38,6 +40,7 @@ export function ResourceForm<T>({
   defaultValues = {},
   isSubmitting = false,
   title,
+  hideSubmitButton = false,
 }: ResourceFormProps<T>) {
   // Dynamically create Zod schema based on fields
   const formSchema = z.object(
@@ -100,6 +103,8 @@ export function ResourceForm<T>({
                       <Textarea
                         placeholder={field.placeholder}
                         {...formField}
+                        readOnly={field.readOnly}
+                        className={field.readOnly ? 'bg-gray-100' : ''}
                       />
                     ) : field.type === 'select' ? (
                       <Select
@@ -135,6 +140,8 @@ export function ResourceForm<T>({
                         type={field.type}
                         placeholder={field.placeholder}
                         {...formField}
+                        readOnly={field.readOnly}
+                        className={field.readOnly ? 'bg-gray-100' : ''}
                       />
                     )}
                   </FormControl>
@@ -144,9 +151,11 @@ export function ResourceForm<T>({
             />
           ))}
           
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Submitting...' : 'Submit'}
-          </Button>
+          {!hideSubmitButton && (
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Submitting...' : 'Submit'}
+            </Button>
+          )}
         </form>
       </Form>
     </div>

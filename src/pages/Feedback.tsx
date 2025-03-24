@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
 import { toast } from 'sonner';
 
 export default function FeedbackPage() {
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isViewOpen, setIsViewOpen] = useState(false);
   const [currentFeedback, setCurrentFeedback] = useState<Feedback | null>(null);
   const [page, setPage] = useState(1);
   
@@ -29,14 +29,9 @@ export default function FeedbackPage() {
   const updateMutation = useUpdateFeedback();
   const deleteMutation = useDeleteFeedback();
   
-  const handleAdd = () => {
-    setCurrentFeedback(null);
-    setIsFormOpen(true);
-  };
-  
   const handleEdit = (feedback: Feedback) => {
     setCurrentFeedback(feedback);
-    setIsFormOpen(true);
+    setIsViewOpen(true);
   };
   
   const handleDelete = async (id: number) => {
@@ -50,42 +45,24 @@ export default function FeedbackPage() {
     }
   };
   
-  const handleSubmit = async (data: Feedback) => {
-    try {
-      if (currentFeedback?.id) {
-        await updateMutation.mutateAsync({ ...data, id: currentFeedback.id });
-        toast.success('Feedback updated successfully');
-      } else {
-        await createMutation.mutateAsync(data);
-        toast.success('Feedback created successfully');
-      }
-      setIsFormOpen(false);
-    } catch (error) {
-      toast.error('Failed to save feedback');
-    }
-  };
-  
   const formFields: FormField[] = [
     {
       name: 'name',
       label: 'Name',
       type: 'text',
-      placeholder: 'Enter name',
-      required: true,
+      readOnly: true,
     },
     {
       name: 'phone_number',
       label: 'Phone Number',
       type: 'text',
-      placeholder: 'Enter phone number',
-      required: true,
+      readOnly: true,
     },
     {
       name: 'feedback',
       label: 'Feedback',
       type: 'textarea',
-      placeholder: 'Enter feedback',
-      required: true,
+      readOnly: true,
     },
   ];
   
@@ -122,24 +99,22 @@ export default function FeedbackPage() {
         isLoading={isLoading}
         onEdit={handleEdit}
         onDelete={handleDelete}
-        onAdd={handleAdd}
         totalCount={count}
         pageSize={10}
         currentPage={page}
         onPageChange={(newPage) => setPage(newPage)}
       />
       
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+      <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
         <DialogContent>
-          <DialogTitle>
-            {currentFeedback ? 'Edit Feedback' : 'Add New Feedback'}
-          </DialogTitle>
+          <DialogTitle>View Feedback</DialogTitle>
           <ResourceForm
             fields={formFields}
-            onSubmit={handleSubmit}
+            onSubmit={() => {}}
             defaultValues={currentFeedback || {}}
-            isSubmitting={createMutation.isPending || updateMutation.isPending}
+            isSubmitting={false}
             title=""
+            hideSubmitButton={true}
           />
         </DialogContent>
       </Dialog>

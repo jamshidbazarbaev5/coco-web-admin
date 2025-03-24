@@ -16,12 +16,18 @@ export function SizesPage() {
   } = useGetSizes({
     params: {
       page: page,
-      page_size: 10 
+      page_size: 10,
+      ordering: '-created_at'
     }
   });
   const { mutate: createSize, isPending: isCreating } = useCreateSize();
   const { mutate: updateSize, isPending: isUpdating } = useUpdateSize();
   const { mutate: deleteSize } = useDeleteSize();
+
+  const sizes = (sizesData.results || []).map((size, index) => ({
+    ...size,
+    displayId: ((page - 1) * 10) + index + 1
+  }));
 
   // Form fields definition
   const sizeFields: FormField[] = [
@@ -38,7 +44,7 @@ export function SizesPage() {
   const columns = [
     {
       header: 'ID',
-      accessorKey: 'id',
+      accessorKey: 'displayId',
     },
     {
       header: 'Name',
@@ -89,7 +95,7 @@ export function SizesPage() {
       <h1 className="text-2xl font-bold mb-6">Size Management</h1>
       
       <ResourceTable
-        data={sizesData.results}
+        data={sizes}
         columns={columns}
         isLoading={isLoading}
         onEdit={handleEdit}

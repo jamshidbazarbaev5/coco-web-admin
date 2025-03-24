@@ -13,10 +13,14 @@ export function BrandsPage() {
   const { data: brandsData, isLoading } = useGetBrands({
     params: {
       page: page,
-      page_size: 10
+      page_size: 10,
+      ordering: '-created_at'
     }
   });
-  const brands = brandsData?.results || [];
+  const brands = (brandsData?.results || []).map((brand, index) => ({
+    ...brand,
+    displayId: ((page - 1) * 10) + index + 1
+  }));
   
   const { mutate: createBrand, isPending: isCreating } = useCreateBrand();
   const { mutate: updateBrand, isPending: isUpdating } = useUpdateBrand();
@@ -25,7 +29,7 @@ export function BrandsPage() {
   const columns = [
     {
       header: 'ID',
-      accessorKey: 'id',
+      accessorKey: 'displayId',
     },
     {
       header: 'Name',
@@ -97,10 +101,6 @@ export function BrandsPage() {
         pageSize={10}
         currentPage={page}
         onPageChange={(newPage) => setPage(newPage)}
-
-
-
-                 
       />
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
