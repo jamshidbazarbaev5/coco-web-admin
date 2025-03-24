@@ -3,8 +3,6 @@ import { ResourceTable } from '../helpers/ResourceTable';
 import { ResourceForm, FormField } from '../helpers/ResourceForm';
 import { 
   useGetFeedbacks, 
-  useCreateFeedback, 
-  useUpdateFeedback, 
   useDeleteFeedback,
   Feedback
 } from '../api/feeedback';
@@ -25,8 +23,6 @@ export default function FeedbackPage() {
       page_size: 10
     }
   });
-  const createMutation = useCreateFeedback();
-  const updateMutation = useUpdateFeedback();
   const deleteMutation = useDeleteFeedback();
   
   const handleEdit = (feedback: Feedback) => {
