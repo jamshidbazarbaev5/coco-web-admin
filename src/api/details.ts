@@ -10,9 +10,14 @@ export interface SocialMediaUrls {
 
 export interface ContactDetail {
   id?: number;
+
   address_ru: string;
   address_uz: string;
   phone: string;
+  instagram: string;
+  telegram: string;
+  facebook: string;
+  
   map_url: string;
   social_media_urls: SocialMediaUrls;
 }

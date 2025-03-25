@@ -2,16 +2,40 @@ import { ResourceTable } from '../helpers/ResourceTable';
 import { useGetProducts, useDeleteProduct, Product } from '../api/products';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '../components/ui/badge';
+import { useState } from 'react';
 
 export function ProductsPage() {
-  const { data: products = [], isLoading } = useGetProducts();
+  const [page, setPage] = useState(1);
+  const { data: productsData = { count: 0, results: [], next: null, previous: null }, isLoading } = useGetProducts();
   const deleteProduct = useDeleteProduct();
   const navigate = useNavigate();
+
+  // Map products to include displayId
+  const products = Array.isArray(productsData) 
+    ? productsData.map((product, index) => ({
+        ...product,
+        displayId: index + 1
+      }))
+    : (productsData.results || []).map((product, index) => ({
+        ...product,
+        displayId: ((page - 1) * 10) + index + 1
+      }));
 
   const columns = [
     {
       header: 'ID',
-      accessorKey: 'id',
+      accessorKey: 'displayId',
+    },
+    {
+      header: 'Image',
+      accessorKey: 'image',
+      cell: (product: Product) => (
+        <img 
+          src={product.product_attributes[0].image} 
+          alt="Product"
+          className="w-16 h-16 object-cover rounded"
+        />
+      ),
     },
     {
       header: 'Title (UZ)',
@@ -43,7 +67,6 @@ export function ProductsPage() {
         </div>
       ),
     },
-    
   ];
 
   const handleEdit = (product: Product) => {
@@ -63,13 +86,16 @@ export function ProductsPage() {
   return (
     <div className="container mx-auto py-6">
       <ResourceTable<Product>
-        data={Array.isArray(products) ? products : products.results || []}
+        data={products}
         columns={columns}
         isLoading={isLoading}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onAdd={handleAdd}
         pageSize={10}
+        totalCount={productsData.count || 0}
+        currentPage={page}
+        onPageChange={(newPage) => setPage(newPage)}
       />
     </div>
   );

@@ -4,9 +4,9 @@ import { ResourceTable } from '../helpers/ResourceTable';
 import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
-
-
-
+import { useUpdateOrder } from '../api/order';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Button } from '../components/ui/button';
 
 export function Orders() {
   const [page, setPage] = useState(1);
@@ -15,10 +15,20 @@ export function Orders() {
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [, setSelectedProducts] = useState<Array<{product: Product | null, quantity: number, subtotal?: number}>>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [newStatus, setNewStatus] = useState<string>('');
+  const { mutate: updateOrder } = useUpdateOrder();
 
   const { data, isLoading, refetch } = useGetOrders({ params: { page } });
   const { data: productsData, refetch: refetchProducts } = useGetProducts({ params: { page: productPage, page_size: 100 } });
   const { mutate: deleteOrder } = useDeleteOrder();
+
+  const STATUS_CHOICES = [
+    'Отклонен',
+    'Ожидает подтверждения',
+    'Собирается',
+    'В пути',
+    'Доставлен',
+  ];
 
   useEffect(() => {
     // Reset state when component mounts
@@ -43,8 +53,6 @@ export function Orders() {
       }
     }
   }, [productsData, productPage]);
-
-
 
   const columns = [
     {
@@ -100,8 +108,6 @@ export function Orders() {
     },
   ];
 
- 
-
   const handleDelete = (id: number) => {
     if (window.confirm('Are you sure you want to delete this order?')) {
       Promise.resolve(deleteOrder(id))
@@ -133,6 +139,42 @@ export function Orders() {
       setSelectedProducts([]);
     }
   }, [editingOrder, allProducts]);
+
+  const handleSaveStatus = () => {
+    if (!editingOrder || !newStatus) return;
+
+    const updateData = {
+      id: editingOrder.id,
+      customer_name: editingOrder.customer_name,
+      customer_phone: editingOrder.customer_phone,
+      customer_preferences: editingOrder.customer_preferences,
+      order_items: editingOrder.order_items.map(item => ({
+        product: item.product,
+        quantity: item.quantity,
+        subtotal: item.subtotal
+      })),
+      status: newStatus,
+      total_sum: editingOrder.total_sum
+    };
+
+    console.log('Sending update data:', updateData); // For debugging
+
+    updateOrder(
+      updateData,
+      {
+        onSuccess: () => {
+          toast.success('Status updated successfully');
+          refetch();
+          setIsFormOpen(false);
+        },
+        onError: (error: Error) => {
+          toast.error('Error updating status', {
+            description: error.message,
+          });
+        },
+      }
+    );
+  };
 
   console.log(data);
 
@@ -176,8 +218,23 @@ export function Orders() {
                 <div>
                   <strong>Preferences:</strong> {editingOrder.customer_preferences}
                 </div>
-                <div>
-                  <strong>Status:</strong> {editingOrder.status}
+                <div className="flex items-center gap-2">
+                  <strong>Status:</strong>
+                  <Select
+                    defaultValue={editingOrder.status}
+                    onValueChange={setNewStatus}
+                  >
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STATUS_CHOICES.map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {status}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -206,6 +263,12 @@ export function Orders() {
                     Total: ${editingOrder.total_sum}
                   </div>
                 )}
+              </div>
+
+              <div className="flex justify-end mt-4">
+                <Button onClick={handleSaveStatus}>
+                  Save Changes
+                </Button>
               </div>
             </div>
           )}
