@@ -95,12 +95,12 @@ export function Orders() {
                     {product ? product.title_uz : `Product ID: ${item.product}`}, 
                     Qty: {item.quantity}
                   </span>
-                  {item.subtotal && <span> (${item.subtotal})</span>}
+                  {item.subtotal && <span> ({formatPrice(item.subtotal)})</span>}
                 </div>
               );
             })}
             {row.total_sum && (
-              <div className="font-semibold mt-1">Total: ${row.total_sum}</div>
+              <div className="font-semibold mt-1">Total: {formatPrice(row.total_sum)}</div>
             )}
           </div>
         );
@@ -139,6 +139,22 @@ export function Orders() {
       setSelectedProducts([]);
     }
   }, [editingOrder, allProducts]);
+  const formatPrice = (price: any) => {
+    // Convert price to string if it's a number
+    const priceStr = typeof price === 'number' ? price.toString() : price;
+    
+    // Convert price string to number, removing any non-digit characters except decimal point
+    const numPrice = Number(priceStr.replace(/[^\d.]/g, ''));
+    
+    // Format with spaces between thousands
+    const formattedPrice = Math.floor(numPrice)
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    
+    // Return formatted price with 'uzs' suffix
+    return `${formattedPrice} uzs`;
+  }
+
 
   const handleSaveStatus = () => {
     if (!editingOrder || !newStatus) return;
@@ -252,7 +268,7 @@ export function Orders() {
                           <strong>Quantity:</strong> {item.quantity}
                         </div>
                         <div>
-                          <strong>Subtotal:</strong> ${item.subtotal}
+                          <strong>Subtotal:</strong> {formatPrice(item.subtotal)}
                         </div>
                       </div>
                     );
@@ -260,7 +276,7 @@ export function Orders() {
                 </div>
                 {editingOrder.total_sum && (
                   <div className="text-right font-semibold mt-3">
-                    Total: ${editingOrder.total_sum}
+                    Total: {formatPrice(editingOrder.total_sum)}
                   </div>
                 )}
               </div>
