@@ -17,7 +17,22 @@ export function ProductsPage() {
     ...product,
     displayId: ((page - 1) * 10) + index + 1
   }));
-
+   
+  const formatPrice = (price: any) => {
+    // Convert price to string if it's a number
+    const priceStr = typeof price === 'number' ? price.toString() : price;
+    
+    // Convert price string to number, removing any non-digit characters except decimal point
+    const numPrice = Number(priceStr.replace(/[^\d.]/g, ''));
+    
+    // Format with spaces between thousands
+    const formattedPrice = Math.floor(numPrice)
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    
+    // Return formatted price with 'uzs' suffix
+    return `${formattedPrice} uzs`;
+  }
   const columns = [
     {
       header: 'ID',
@@ -34,17 +49,14 @@ export function ProductsPage() {
         />
       ),
     },
-    {
-      header: 'Title (UZ)',
-      accessorKey: 'title_uz',
-    },
+   
     {
       header: 'Title (RU)',
       accessorKey: 'title_ru',
     },
     {
       header: 'Price',
-      accessorKey: (product: Product) => `$${product.price.toLocaleString()}`,
+      accessorKey: (product: Product) => `${formatPrice(product.price)}`,
     },
     {
       header: 'Quantity',

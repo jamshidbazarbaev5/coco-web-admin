@@ -1,8 +1,7 @@
 import { createResourceApiHooks } from '../hooks/createResourceApiHooks';
 
-// Types
 export interface ProductAttribute {
-  color_code: string;  // hex color code
+  color_code: string;  
   color_name_uz: string;
   color_name_ru: string;
   image: File;
@@ -20,7 +19,7 @@ export interface ProductFormData {
   description_ru: string;
   material: number;
   price: number;
-  new_price?: number; // Add new_price field
+  new_price?: number;
   quantity: number;
   product_attributes: ProductAttribute[];
   color_code: string;
@@ -30,9 +29,8 @@ export interface ProductFormData {
 
 export interface Product extends Omit<ProductFormData, 'product_attributes'> {
   id: number;
-  new_price?: number; // Add new_price field
+  new_price?: number; 
   product_attributes: Array<{
-    // color: string;
     image: any;
     sizes: number[];
     color_code: string;
@@ -57,7 +55,6 @@ export const {
   useDeleteResource: useDeleteProduct
 } = createResourceApiHooks<Product>(PRODUCT_URL, 'products');
 
-// Helper function to convert ProductFormData to FormData
 export const createProductFormData = (productData: ProductFormData): FormData => {
   const formData = new FormData();
   

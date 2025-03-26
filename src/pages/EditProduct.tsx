@@ -24,7 +24,6 @@ export function EditProduct() {
   const [allSizes, setAllSizes] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Form state
   const [formData, setFormData] = useState<any>({});
   const [productAttributes, setProductAttributes] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -77,7 +76,6 @@ export function EditProduct() {
     fetchAllData();
   }, []);
 
-  // Initialize form data when product is loaded
   useEffect(() => {
     if (product) {
       setFormData({
@@ -93,7 +91,6 @@ export function EditProduct() {
         quantity: product.quantity
       });
       
-      // Initialize product attributes
       if (product.product_attributes && product.product_attributes.length > 0) {
         setProductAttributes(
           product.product_attributes.map(attr => ({
@@ -106,7 +103,6 @@ export function EditProduct() {
           }))
         );
       } else {
-        // Start with one empty attribute if none exist
         setProductAttributes([{
           color_code: '#000000',
           color_name_uz: '',
@@ -150,7 +146,6 @@ export function EditProduct() {
     try {
       const submitFormData = new FormData();
       
-      // Add basic product fields
       submitFormData.append('id', id!.toString());
       submitFormData.append('brand', formData.brand.toString());
       submitFormData.append('category', formData.category.toString());
@@ -167,39 +162,32 @@ export function EditProduct() {
       
       submitFormData.append('quantity', formData.quantity.toString());
       
-      // Update product attributes submission
       productAttributes.forEach((attr, index) => {
         submitFormData.append(`product_attributes[${index}][color_code]`, attr.color_code);
         submitFormData.append(`product_attributes[${index}][color_name_uz]`, attr.color_name_uz);
         submitFormData.append(`product_attributes[${index}][color_name_ru]`, attr.color_name_ru);
         
-        // Handle sizes - Make sure it's submitted as an array
         if (attr.sizes && attr.sizes.length > 0) {
           attr.sizes.forEach((sizeId: number) => {
             submitFormData.append(`product_attributes[${index}][uploaded_sizes][]`, sizeId.toString());
           });
         }
         
-        // Handle images
         if (attr.newImage) {
           submitFormData.append(`product_attributes[${index}][image]`, attr.newImage);
         } else if (attr.image) {
-          // If no new image but there's an existing image URL, send it as is
           submitFormData.append(`product_attributes[${index}][image]`, attr.image);
         }
       });
       
-      // For debugging
       console.log('Form data being sent:', Object.fromEntries(submitFormData.entries()));
       
-      // Important: Set the id property on the FormData object for the hook to work
       Object.defineProperty(submitFormData, 'id', {
         value: Number(id),
         writable: false,
         enumerable: true
       });
       
-      // Send the update request
       await updateProduct.mutateAsync(submitFormData as any);
       
       navigate('/products');

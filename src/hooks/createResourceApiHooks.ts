@@ -1,14 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../api/api';
 
-// Update BaseResource to have optional id
 interface BaseResource {
   id?: number;
 }
 
-// Generic resource API hook factory
 export function createResourceApiHooks<T extends BaseResource, R = { results: T[], count: number }>(baseUrl: string, queryKey: string) {
-  // Get all resources
   const useGetResources = (options?: { params?: Record<string, any> }) => {
     return useQuery({
       queryKey: [queryKey, options?.params],
@@ -19,7 +16,6 @@ export function createResourceApiHooks<T extends BaseResource, R = { results: T[
     });
   };
 
-  // Get a single resource by ID
   const useGetResource = (id: number) => {
     return useQuery({
       queryKey: [queryKey, id],
@@ -31,13 +27,11 @@ export function createResourceApiHooks<T extends BaseResource, R = { results: T[
     });
   };
 
-  // Create a new resource
   const useCreateResource = () => {
     const queryClient = useQueryClient();
     
     return useMutation({
       mutationFn: async (newResource: T) => {
-        // Check if we need to use FormData (for files)
         const isFormData = newResource instanceof FormData;
         const config = isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {};
         
@@ -50,13 +44,11 @@ export function createResourceApiHooks<T extends BaseResource, R = { results: T[
     });
   };
 
-  // Update an existing resource
   const useUpdateResource = () => {
     const queryClient = useQueryClient();
     
     return useMutation({
       mutationFn: async (payload: { formData: FormData; id: number } | T) => {
-        // Check if we're dealing with FormData
         if ('formData' in payload && payload.id) {
           const response = await api.put<T>(
             `${baseUrl}${payload.id}/`,
@@ -66,7 +58,6 @@ export function createResourceApiHooks<T extends BaseResource, R = { results: T[
           return response.data;
         }
         
-        // Handle regular updates
         const updatedResource = payload as T;
         if (!updatedResource.id) throw new Error(`${queryKey} ID is required for update`);
         
@@ -85,7 +76,6 @@ export function createResourceApiHooks<T extends BaseResource, R = { results: T[
     });
   };
 
-  // Delete a resource
   const useDeleteResource = () => {
     const queryClient = useQueryClient();
     
