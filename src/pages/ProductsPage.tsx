@@ -6,20 +6,17 @@ import { useState } from 'react';
 
 export function ProductsPage() {
   const [page, setPage] = useState(1);
-  const { data: productsData = { count: 0, results: [], next: null, previous: null }, isLoading } = useGetProducts();
+  const { data: productsData = { count: 0, results: [], next: null, previous: null }, isLoading } = useGetProducts({
+    params: { page }
+  });
   const deleteProduct = useDeleteProduct();
   const navigate = useNavigate();
 
   // Map products to include displayId
-  const products = Array.isArray(productsData) 
-    ? productsData.map((product, index) => ({
-        ...product,
-        displayId: index + 1
-      }))
-    : (productsData.results || []).map((product, index) => ({
-        ...product,
-        displayId: ((page - 1) * 10) + index + 1
-      }));
+  const products = (productsData.results || []).map((product, index) => ({
+    ...product,
+    displayId: ((page - 1) * 10) + index + 1
+  }));
 
   const columns = [
     {
@@ -60,8 +57,12 @@ export function ProductsPage() {
         <div className="flex gap-1 flex-wrap">
           {product.product_attributes.map((attr, index) => (
             <Badge key={index} variant="outline" className="text-xs">
-              {attr.color}
-              {attr.sizes.length > 0 ? ` - ${attr.sizes.join(', ')}` : ''}
+              <div 
+                className="w-3 h-3 rounded-full inline-block mr-1" 
+                style={{ backgroundColor: attr.color_code }}
+              />
+              {attr.color_name_uz}
+              {/* {attr.sizes.length > 0 ? `  ${attr.sizes.join(', ')}` : ''} */}
             </Badge>
           ))}
         </div>

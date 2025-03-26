@@ -97,15 +97,23 @@ export function EditProduct() {
       if (product.product_attributes && product.product_attributes.length > 0) {
         setProductAttributes(
           product.product_attributes.map(attr => ({
-            color: attr.color,
-            image: attr.image, // This is the URL of the existing image
+            color_code: attr.color_code || '#000000',
+            color_name_uz: attr.color_name_uz || '',
+            color_name_ru: attr.color_name_ru || '',
+            image: attr.image,
             sizes: attr.sizes,
-            newImage: null // For tracking new file uploads
+            newImage: null
           }))
         );
       } else {
         // Start with one empty attribute if none exist
-        setProductAttributes([{ color: '#000000', sizes: [], newImage: null }]);
+        setProductAttributes([{
+          color_code: '#000000',
+          color_name_uz: '',
+          color_name_ru: '',
+          sizes: [],
+          newImage: null
+        }]);
       }
     }
   }, [product]);
@@ -128,7 +136,7 @@ export function EditProduct() {
   };
 
   const addAttribute = () => {
-    setProductAttributes(prev => [...prev, { color: '#000000', sizes: [], newImage: null }]);
+    setProductAttributes(prev => [...prev, { color_code: '#000000', sizes: [], newImage: null }]);
   };
 
   const removeAttribute = (index: number) => {
@@ -140,7 +148,6 @@ export function EditProduct() {
     setIsSubmitting(true);
     
     try {
-      // Create FormData object
       const submitFormData = new FormData();
       
       // Add basic product fields
@@ -160,26 +167,26 @@ export function EditProduct() {
       
       submitFormData.append('quantity', formData.quantity.toString());
       
-      // Add product attributes
+      // Update product attributes submission
       productAttributes.forEach((attr, index) => {
-        submitFormData.append(`product_attributes[${index}][color]`, attr.color);
+        submitFormData.append(`product_attributes[${index}][color_code]`, attr.color_code);
+        submitFormData.append(`product_attributes[${index}][color_name_uz]`, attr.color_name_uz);
+        submitFormData.append(`product_attributes[${index}][color_name_ru]`, attr.color_name_ru);
         
-        // Handle sizes
+        // Handle sizes - Make sure it's submitted as an array
         if (attr.sizes && attr.sizes.length > 0) {
           attr.sizes.forEach((sizeId: number) => {
-            submitFormData.append(`product_attributes[${index}][uploaded_sizes]`, sizeId.toString());
+            submitFormData.append(`product_attributes[${index}][uploaded_sizes][]`, sizeId.toString());
           });
         }
         
-        // Handle images - either use the new image or keep the existing one
+        // Handle images
         if (attr.newImage) {
-          // If there's a new image uploaded, use that
-          submitFormData.append(`product_attributes[${index}]image`, attr.newImage);
-        } 
-        if (attr.image) {
-          // If there's a new image uploaded, use that
-          submitFormData.append(`product_attributes[${index}]image`, attr.image);
-        } 
+          submitFormData.append(`product_attributes[${index}][image]`, attr.newImage);
+        } else if (attr.image) {
+          // If no new image but there's an existing image URL, send it as is
+          submitFormData.append(`product_attributes[${index}][image]`, attr.image);
+        }
       });
       
       // For debugging
@@ -430,21 +437,43 @@ export function EditProduct() {
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                      {/* Color */}
+                      {/* Color Section */}
                       <div className="space-y-2">
                         <Label htmlFor={`color-${index}`}>Color</Label>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-col gap-4">
+                          <div className="flex items-center gap-2">
+                            <Input 
+                              id={`color-${index}`} 
+                              type="color" 
+                              value={attr.color_code || '#000000'} 
+                              onChange={(e) => handleAttributeChange(index, 'color_code', e.target.value)} 
+                              className="w-12 h-10 p-1"
+                            />
+                            <Input 
+                              value={attr.color_code || '#000000'} 
+                              onChange={(e) => {
+                                // Ensure the value starts with #
+                                let value = e.target.value;
+                                if (!value.startsWith('#')) {
+                                  value = '#' + value;
+                                }
+                                // Limit to 7 characters (#RRGGBB)
+                                value = value.slice(0, 7);
+                                handleAttributeChange(index, 'color_code', value);
+                              }}
+                              className="flex-1"
+                              placeholder="#000000"
+                            />
+                          </div>
                           <Input 
-                            id={`color-${index}`} 
-                            type="color" 
-                            value={attr.color || '#000000'} 
-                            onChange={(e) => handleAttributeChange(index, 'color', e.target.value)} 
-                            className="w-12 h-10 p-1"
+                            placeholder="Color name (UZ)"
+                            value={attr.color_name_uz || ''}
+                            onChange={(e) => handleAttributeChange(index, 'color_name_uz', e.target.value)}
                           />
                           <Input 
-                            value={attr.color || '#000000'} 
-                            onChange={(e) => handleAttributeChange(index, 'color', e.target.value)} 
-                            className="flex-1"
+                            placeholder="Color name (RU)"
+                            value={attr.color_name_ru || ''}
+                            onChange={(e) => handleAttributeChange(index, 'color_name_ru', e.target.value)}
                           />
                         </div>
                       </div>

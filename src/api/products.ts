@@ -2,9 +2,12 @@ import { createResourceApiHooks } from '../hooks/createResourceApiHooks';
 
 // Types
 export interface ProductAttribute {
-  color: string;
+  color_code: string;  // hex color code
+  color_name_uz: string;
+  color_name_ru: string;
   image: File;
-  size?: number; // Optional size ID
+  size?: number;
+  
 }
 
 export interface ProductFormData {
@@ -20,17 +23,26 @@ export interface ProductFormData {
   new_price?: number; // Add new_price field
   quantity: number;
   product_attributes: ProductAttribute[];
+  color_code: string;
+  color_name_uz: string;
+  color_name_ru: string;
 }
 
 export interface Product extends Omit<ProductFormData, 'product_attributes'> {
   id: number;
   new_price?: number; // Add new_price field
   product_attributes: Array<{
-    color: string;
-    image: string;
-    sizes: number[]; // Changed from size?: number to sizes: number[]
+    // color: string;
+    image: any;
+    sizes: number[];
+    color_code: string;
+    color_name_uz: string;
+    color_name_ru: string;
   }>;
   created_at?: string;
+  color_code: string;
+  color_name_uz: string;
+  color_name_ru: string;
   updated_at?: string;
   on_sale?: boolean;
 }
@@ -64,17 +76,18 @@ export const createProductFormData = (productData: ProductFormData): FormData =>
   formData.append('quantity', productData.quantity.toString());
   
   productData.product_attributes.forEach((attr, index) => {
-    formData.append(`product_attributes[${index}]color`, attr.color);
-  
+    formData.append(`product_attributes[${index}]color_code`, attr.color_code);
+    formData.append(`product_attributes[${index}]color_name_uz`, attr.color_name_uz);
+    formData.append(`product_attributes[${index}]color_name_ru`, attr.color_name_ru);
     
-   
     if (attr.image && attr.image.size > 0) {
       formData.append(`product_attributes[${index}]image`, attr.image);
+    }
     
-      if (attr.size) {
+    if (attr.size) {
       formData.append(`product_attributes[${index}]uploaded_sizes`, attr.size.toString());
     }
-  }});
+  });
   
   console.log('Form data being sent:', Object.fromEntries(formData.entries()));
   

@@ -55,18 +55,24 @@ export function createResourceApiHooks<T extends BaseResource, R = { results: T[
     const queryClient = useQueryClient();
     
     return useMutation({
-      mutationFn: async (updatedResource: T) => {
-        // Add type guard to check for id
+      mutationFn: async (payload: { formData: FormData; id: number } | T) => {
+        // Check if we're dealing with FormData
+        if ('formData' in payload && payload.id) {
+          const response = await api.put<T>(
+            `${baseUrl}${payload.id}/`,
+            payload.formData,
+            { headers: { 'Content-Type': 'multipart/form-data' } }
+          );
+          return response.data;
+        }
+        
+        // Handle regular updates
+        const updatedResource = payload as T;
         if (!updatedResource.id) throw new Error(`${queryKey} ID is required for update`);
         
-        // Check if we need to use FormData (for files)
-        const isFormData = updatedResource instanceof FormData;
-        const config = isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {};
-        
         const response = await api.put<T>(
-          `${baseUrl}${updatedResource.id}/`, 
-          updatedResource,
-          config
+          `${baseUrl}${updatedResource.id}/`,
+          updatedResource
         );
         return response.data;
       },

@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { ProductFormData, Product } from '../api/products';
 import { PlusIcon, TrashIcon } from 'lucide-react';
 
+
 interface ProductFormProps {
   onSubmit: (data: ProductFormData) => void;
   defaultValues?: Partial<Product>;
@@ -36,12 +37,14 @@ const productSchema = z.object({
   material: z.coerce.number().min(1, 'Material is required'),
   price: z.coerce.number().min(0, 'Price must be positive'),
   quantity: z.coerce.number().min(0, 'Quantity must be positive'),
-  new_price: z.coerce.number().min(0, 'New price must be positive').optional(),
+  new_price: z.coerce.number().min(0).optional(),
   product_attributes: z.array(z.object({
-    color: z.string().min(1, 'Color is required'),
+    color_code: z.string().min(1, 'Color code is required'),
+    color_name_uz: z.string().min(1, 'Color name (UZ) is required'),
+    color_name_ru: z.string().min(1, 'Color name (RU) is required'),
     image: z.union([
       z.instanceof(File),
-      z.string() // Allow string for existing image URLs
+      z.string()
     ]),
     size: z.coerce.number().min(1, 'Size is required'),
   })).min(1, 'At least one product attribute is required'),
@@ -64,27 +67,29 @@ export function ProductForm({
   const form = useForm<ProductFormSchema>({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      brand: defaultValues?.brand,
-      category: defaultValues?.category,
-      title_uz: defaultValues?.title_uz,
-      title_ru: defaultValues?.title_ru,
-      description_uz: defaultValues?.description_uz,
-      description_ru: defaultValues?.description_ru,
-      material: defaultValues?.material,
-      price: defaultValues?.price,
-      quantity: defaultValues?.quantity,
-      new_price: defaultValues?.new_price,
-      product_attributes: defaultValues?.product_attributes 
-        ? defaultValues.product_attributes.map(attr => ({
-            color: attr.color,
-            size: attr.sizes[0], // Take the first size from the array
-            image: attr.image // Use the image URL
-          }))
-        : [{ color: '', image: new File([], 'placeholder.jpg'), size: 0 }],
+      brand: 0,
+      category: 0,
+      title_uz: '',
+      title_ru: '',
+      description_uz: '',
+      description_ru: '',
+      material: 0,
+      price: 0,
+      quantity: 0,
+      new_price: 0,
+      product_attributes: [{
+        color_code: '#000000',
+        color_name_uz: '',
+        color_name_ru: '',
+        image: new File([], 'placeholder.jpg'),
+        size: 0
+      }],
+      ...defaultValues
     },
   });
 
   console.log('C. Form initialized with values:', form.getValues());
+  console.log('Form errors:', form.formState.errors); // Add this line to debug validation errors
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -94,42 +99,35 @@ export function ProductForm({
   const validateAndSubmit = async (data: ProductFormSchema) => {
     console.log('D. ValidateAndSubmit received data:', data);
     
-    const hasInvalidImage = data.product_attributes.some(
-      attr => {
-        const isInvalid = !(attr.image instanceof File || typeof attr.image === 'string');
-        console.log('E. Checking image validity:', { attr, isInvalid });
-        return isInvalid;
-      }
-    );
-    
-    if (hasInvalidImage) {
-      console.log('F. Invalid image found');
-      form.setError('product_attributes', {
-        type: 'manual',
-        message: 'All product attributes must have an image'
-      });
-      return;
+    try {
+      const formData: ProductFormData = {
+        ...data,
+        id: defaultValues?.id,
+        color_code: data.product_attributes[0]?.color_code || '',
+        color_name_uz: data.product_attributes[0]?.color_name_uz || '',
+        color_name_ru: data.product_attributes[0]?.color_name_ru || '',
+        product_attributes: data.product_attributes.map(attr => ({
+          color_code: attr.color_code,
+          color_name_uz: attr.color_name_uz,
+          color_name_ru: attr.color_name_ru,
+          image: typeof attr.image === 'string' ? new File([], attr.image) : attr.image,
+          size: attr.size
+        }))
+      };
+      
+      console.log('G. Calling onSubmit with formData:', formData);
+      await onSubmit(formData);
+    } catch (error) {
+      console.error('Error in validateAndSubmit:', error);
     }
-    
-    // Convert the data to match ProductFormData interface
-    const formData: ProductFormData = {
-      ...data,
-      id: defaultValues?.id, // Make sure to include the ID
-      product_attributes: data.product_attributes.map(attr => ({
-        color: attr.color,
-        // Only create new File if it's not already a string (existing image URL)
-        image: typeof attr.image === 'string' ? new File([], attr.image) : attr.image,
-        size: attr.size
-      }))
-    };
-    
-    console.log('G. Calling onSubmit with formData:', formData);
-    onSubmit(formData);
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(validateAndSubmit)} className="space-y-6">
+      <form 
+        onSubmit={form.handleSubmit(validateAndSubmit)} 
+        className="space-y-6"
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Basic Information */}
           <div className="space-y-4">
@@ -342,7 +340,13 @@ export function ProductForm({
             <h3 className="text-lg font-semibold">Product Attributes</h3>
             <Button
               type="button"
-              onClick={() => append({ color: '', image: new File([], 'placeholder.jpg'), size: 0 })}
+              onClick={() => append({
+                color_code: '#000000',
+                color_name_uz: '',
+                color_name_ru: '',
+                image: new File([], 'placeholder.jpg'),
+                size: 0
+              })}
               variant="outline"
             >
               <PlusIcon className="w-4 h-4 mr-2" /> Add Attribute
@@ -351,29 +355,73 @@ export function ProductForm({
 
           {fields.map((field, index) => (
             <div key={field.id} className="flex gap-4 items-start border p-4 rounded-lg">
-              <FormField
-                control={form.control}
-                name={`product_attributes.${index}.color`}
-                render={({ field }) => (
-                  <FormItem className="flex-1">
-                    <FormLabel>Color</FormLabel>
-                    <FormControl>
-                      <Input {...field} type="color" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                {/* Color Code */}
+                <FormField
+                  control={form.control}
+                  name={`product_attributes.${index}.color_code`}
+                  render={({ field: colorCodeField }) => (
+                    <FormItem>
+                      <FormLabel>Color Code</FormLabel>
+                      <div className="flex items-center gap-2">
+                        <Input 
+                          type="color" 
+                          {...colorCodeField}
+                          className="w-12 h-10 p-1"
+                        />
+                        <Input 
+                          {...colorCodeField}
+                          className="flex-1"
+                        />
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                {/* Color Name UZ */}
+                <FormField
+                  control={form.control}
+                  name={`product_attributes.${index}.color_name_uz`}
+                  render={({ field: colorNameUzField }) => (
+                    <FormItem>
+                      <FormLabel>Color Name (UZ)</FormLabel>
+                      <FormControl>
+                        <Input {...colorNameUzField} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                {/* Color Name RU */}
+                <FormField
+                  control={form.control}
+                  name={`product_attributes.${index}.color_name_ru`}
+                  render={({ field: colorNameRuField }) => (
+                    <FormItem>
+                      <FormLabel>Color Name (RU)</FormLabel>
+                      <FormControl>
+                        <Input {...colorNameRuField} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+               
+              </div>
 
               <FormField
                 control={form.control}
                 name={`product_attributes.${index}.size`}
-                render={({ field }) => (
+                render={({ field: sizeField }) => (
                   <FormItem className="flex-1">
                     <FormLabel>Size</FormLabel>
                     <Select 
-                      onValueChange={(value) => field.onChange(Number(value))}
-                      value={field.value ? String(field.value) : undefined}
+                      onValueChange={(value) => sizeField.onChange(Number(value))}
+                      value={sizeField.value ? String(sizeField.value) : undefined}
+                      defaultValue={undefined}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -444,9 +492,24 @@ export function ProductForm({
           </div>
         )}
 
-        <Button type="submit" disabled={isSubmitting}>
+        <Button 
+          type="submit" 
+          disabled={isSubmitting || !form.formState.isValid}
+          onClick={() => {
+            console.log('Current form values:', form.getValues());
+            console.log('Form errors:', form.formState.errors);
+          }}
+        >
           {isSubmitting ? 'Saving...' : 'Save Product'}
         </Button>
+
+        {/* Add error display */}
+        {Object.keys(form.formState.errors).length > 0 && (
+          <div className="text-red-500 mt-4">
+            <p>Form has errors:</p>
+            <pre>{JSON.stringify(form.formState.errors, null, 2)}</pre>
+          </div>
+        )}
       </form>
     </Form>
   );

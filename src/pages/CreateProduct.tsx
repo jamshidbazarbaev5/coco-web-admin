@@ -110,6 +110,7 @@ export function CreateProduct() {
       <ProductForm
         onSubmit={async (data) => {
           try {
+            console.log('Submitting form data:', data);
             const formData = createProductFormData(data);
             await createProduct.mutateAsync(formData as any);
             navigate('/products');
@@ -122,6 +123,25 @@ export function CreateProduct() {
         categories={allCategories}
         materials={allMaterials}
         sizes={allSizes}
+        defaultValues={{
+          brand: 0,
+          category: 0,
+          title_uz: '',
+          title_ru: '',
+          description_uz: '',
+          description_ru: '',
+          material: 0,
+          price: 0,
+          quantity: 0,
+          new_price: 0,
+          product_attributes: [{
+            color_code: '#000000',
+            color_name_uz: '',
+            color_name_ru: '',
+            image: new File([], 'placeholder.jpg'),
+            sizes: []
+          }]
+        }}
       />
     </div>
   );

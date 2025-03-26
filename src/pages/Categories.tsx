@@ -10,7 +10,7 @@ export function CategoryPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useGetCategories({
+  const { data, isLoading, refetch } = useGetCategories({
     params: {
       page: page,
       page_size: 10
@@ -23,6 +23,22 @@ export function CategoryPage() {
   const { mutate: deleteCategory } = useDeleteCategory();
 
   const columns = [
+    { 
+      header: 'Image', 
+      accessorKey: 'image',
+      cell: (category: any) => 
+        category.image ? (
+          <img 
+            src={category.image} 
+            alt="Product"
+            className="w-16 h-16 object-cover rounded"
+          />
+        ) : (
+          <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-gray-400">
+            No image
+          </div>
+        )
+    },
     { header: 'Name (RU)', accessorKey: 'name_ru' },
     { header: 'Name (UZ)', accessorKey: 'name_uz' },
   ];
@@ -42,41 +58,75 @@ export function CategoryPage() {
       placeholder: 'Enter category name in Uzbek',
       required: true,
     },
+    {
+      name: 'image',
+      label: 'Image',
+      type: 'file' as const,
+      required: !selectedCategory, // Only required for new categories
+    }
   ];
 
   const handleSubmit = (data: Category) => {
+    const formData = new FormData();
+    formData.append('name_ru', data.name_ru);
+    formData.append('name_uz', data.name_uz);
+    
+    if (data.image instanceof File) {
+      formData.append('image', data.image);
+    }
+
     if (selectedCategory?.id) {
       updateCategory(
-        { id: selectedCategory.id, ...data },
+        { 
+          formData,
+          id: selectedCategory.id
+        } as any,
         {
           onSuccess: () => {
             toast.success('Category updated successfully');
             setIsFormOpen(false);
             setSelectedCategory(null);
+            refetch();
           },
-          onError: () => toast.error('Failed to update category'),
+          onError: (error) => {
+            console.error('Update error:', error);
+            toast.error('Failed to update category');
+          },
         }
       );
     } else {
-      createCategory(data, {
+      createCategory(formData as any, {
         onSuccess: () => {
           toast.success('Category created successfully');
           setIsFormOpen(false);
+          refetch();
         },
-        onError: () => toast.error('Failed to create category'),
+        onError: (error) => {
+          console.error('Create error:', error);
+          toast.error('Failed to create category');
+        },
       });
     }
   };
 
   const handleEdit = (category: Category) => {
-    setSelectedCategory(category);
+    const cleanCategory = {
+      id: category.id,
+      name_ru: category.name_ru,
+      name_uz: category.name_uz,
+      ...(category.image && Object.keys(category.image).length > 0 ? { image: category.image } : {})
+    };
+    setSelectedCategory(cleanCategory);
     setIsFormOpen(true);
   };
 
   const handleDelete = (id: number) => {
     if (confirm('Are you sure you want to delete this category?')) {
       deleteCategory(id, {
-        onSuccess: () => toast.success('Category deleted successfully'),
+        onSuccess: () => {
+          toast.success('Category deleted successfully');
+          refetch();
+        },
         onError: () => toast.error('Failed to delete category'),
       });
     }

@@ -5,6 +5,7 @@ export interface Category {
   id?: number;
   name_ru: string;
   name_uz: string;
+  image?: File | string;
 }
 
 // API endpoints
