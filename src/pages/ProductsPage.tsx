@@ -42,11 +42,15 @@ export function ProductsPage() {
       header: 'Image',
       accessorKey: 'image',
       cell: (product: Product) => (
-        <img 
-          src={product?.product_attributes[0]?.image} 
-          alt="Product"
-          className="w-16 h-16 object-cover rounded"
-        />
+        product?.product_attributes[0]?.image ? (
+          <img 
+            src={product.product_attributes[0].image} 
+            alt="Product"
+            className="w-16 h-16 object-cover rounded"
+          />
+        ) : (
+          <span className="text-gray-400">No image</span>
+        )
       ),
     },
    

@@ -192,18 +192,13 @@ export function EditProduct() {
           submitFormData.append(`product_attributes[${index}]id`, attr.id.toString());
         }
         
-        // Always include these fields
         submitFormData.append(`product_attributes[${index}]color_code`, attr.color_code || '#000000');
         submitFormData.append(`product_attributes[${index}]color_name_uz`, attr.color_name_uz || '');
         submitFormData.append(`product_attributes[${index}]color_name_ru`, attr.color_name_ru || '');
         
-        // Handle image field:
-        // If there's a new image, use that
-        // Otherwise, if there's an existing image URL, create a file from it
         if (attr.newImage instanceof File) {
           submitFormData.append(`product_attributes[${index}]image`, attr.newImage);
         } else if (attr.image) {
-          // Convert the image URL to a file
           try {
             const response = await fetch(attr.image);
             const blob = await response.blob();
