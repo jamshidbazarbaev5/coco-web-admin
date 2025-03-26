@@ -27,7 +27,6 @@ export function EditProduct() {
   const [productAttributes, setProductAttributes] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [, setAttributesModified] = useState(false);
-  const [deletedAttributes, setDeletedAttributes] = useState<number[]>([]);
 
   const fetchAllPages = async (initialUrl: string) => {
     let results: any[] = [];
@@ -148,13 +147,6 @@ export function EditProduct() {
 
   const removeAttribute = (index: number) => {
     setAttributesModified(true);
-    const attribute = productAttributes[index];
-    
-    // If the attribute has an ID (existing attribute), add it to deletedAttributes
-    if (attribute.id) {
-      setDeletedAttributes(prev => [...prev, attribute.id]);
-    }
-    
     setProductAttributes(prev => prev.filter((_, i) => i !== index));
   };
 
@@ -179,11 +171,6 @@ export function EditProduct() {
       if (formData.new_price) {
         submitFormData.append('new_price', formData.new_price.toString());
       }
-
-      // Add deleted attributes to form data
-      deletedAttributes.forEach((id, index) => {
-        submitFormData.append(`attributes_to_delete[${index}]`, id.toString());
-      });
 
       // Product attributes
       await Promise.all(productAttributes.map(async (attr, index) => {
@@ -234,8 +221,6 @@ export function EditProduct() {
         },
       });
       
-      // Reset deleted attributes after successful submission
-      setDeletedAttributes([]);
       navigate('/products');
     } catch (error) {
       console.error('Failed to update product:', error);

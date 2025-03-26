@@ -5,8 +5,7 @@ export interface ProductAttribute {
   color_name_uz: string;
   color_name_ru: string;
   image: File;
-  size?: number;
-  
+  sizes: number[];
 }
 
 export interface ProductFormData {
@@ -31,6 +30,7 @@ export interface Product extends Omit<ProductFormData, 'product_attributes'> {
   id: number;
   new_price?: number; 
   product_attributes: Array<{
+    id: number;
     image: any;
     sizes: number[];
     color_code: string;
@@ -76,13 +76,12 @@ export const createProductFormData = (productData: ProductFormData): FormData =>
     formData.append(`product_attributes[${index}]color_code`, attr.color_code);
     formData.append(`product_attributes[${index}]color_name_uz`, attr.color_name_uz);
     formData.append(`product_attributes[${index}]color_name_ru`, attr.color_name_ru);
+    formData.append(`product_attributes[${index}]image`, attr.image);
     
-    if (attr.image && attr.image.size > 0) {
-      formData.append(`product_attributes[${index}]image`, attr.image);
-    }
-    
-    if (attr.size) {
-      formData.append(`product_attributes[${index}]uploaded_sizes`, attr.size.toString());
+    if (attr.sizes && attr.sizes.length > 0) {
+      attr.sizes.forEach((sizeId, sizeIndex) => {
+        formData.append(`product_attributes[${index}]uploaded_sizes[${sizeIndex}]`, sizeId.toString());
+      });
     }
   });
   

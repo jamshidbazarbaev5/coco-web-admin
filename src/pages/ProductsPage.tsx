@@ -43,7 +43,7 @@ export function ProductsPage() {
       accessorKey: 'image',
       cell: (product: Product) => (
         <img 
-          src={product.product_attributes[0].image} 
+          src={product?.product_attributes[0]?.image} 
           alt="Product"
           className="w-16 h-16 object-cover rounded"
         />

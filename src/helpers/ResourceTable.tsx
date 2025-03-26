@@ -11,7 +11,7 @@ import { Button } from '../components/ui/button';
 import { 
   ChevronLeftIcon, 
   ChevronRightIcon, 
-  PencilIcon, 
+  EyeIcon,
   TrashIcon,
   PlusIcon
 } from 'lucide-react';
@@ -156,7 +156,7 @@ export function ResourceTable<T extends { id?: number }>({
                             onClick={() => onEdit(row)}
                             className="h-8 w-8 p-0 hover:bg-gray-100"
                           >
-                            <PencilIcon className="h-4 w-4 text-gray-500" />
+                            <EyeIcon className="h-4 w-4 text-gray-500" />
                           </Button>
                         )}
                         {onDelete && row.id && (

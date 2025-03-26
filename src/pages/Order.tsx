@@ -205,10 +205,10 @@ export function Orders() {
           setIsFormOpen(true);
         }}
         onDelete={handleDelete}
-        onAdd={() => {
-          setEditingOrder(null);
-          setIsFormOpen(true);
-        }}
+        // onAdd={() => {
+        //   setEditingOrder(null);
+        //   setIsFormOpen(true);
+        // }}
         pageSize={10}
         totalCount={data?.count ?? 0}
         currentPage={page}

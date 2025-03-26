@@ -46,7 +46,7 @@ const productSchema = z.object({
       z.instanceof(File),
       z.string()
     ]),
-    size: z.coerce.number().min(1, 'Size is required'),
+    sizes: z.array(z.coerce.number()).min(1, 'At least one size is required'),
   })).min(1, 'At least one product attribute is required'),
 });
 
@@ -82,7 +82,7 @@ export function ProductForm({
         color_name_uz: '',
         color_name_ru: '',
         image: new File([], 'placeholder.jpg'),
-        size: 0
+        sizes: []
       }],
       ...defaultValues
     },
@@ -111,7 +111,7 @@ export function ProductForm({
           color_name_uz: attr.color_name_uz,
           color_name_ru: attr.color_name_ru,
           image: typeof attr.image === 'string' ? new File([], attr.image) : attr.image,
-          size: attr.size
+          sizes: attr.sizes
         }))
       };
       
@@ -345,7 +345,7 @@ export function ProductForm({
                 color_name_uz: '',
                 color_name_ru: '',
                 image: new File([], 'placeholder.jpg'),
-                size: 0
+                sizes: []
               })}
               variant="outline"
             >
@@ -414,28 +414,32 @@ export function ProductForm({
 
               <FormField
                 control={form.control}
-                name={`product_attributes.${index}.size`}
-                render={({ field: sizeField }) => (
+                name={`product_attributes.${index}.sizes`}
+                render={({ field: sizesField }) => (
                   <FormItem className="flex-1">
-                    <FormLabel>Size</FormLabel>
-                    <Select 
-                      onValueChange={(value) => sizeField.onChange(Number(value))}
-                      value={sizeField.value ? String(sizeField.value) : undefined}
-                      defaultValue={undefined}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select size" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {sizes.map((size) => (
-                          <SelectItem key={size.id} value={String(size.id)}>
+                    <FormLabel>Sizes</FormLabel>
+                    <div className="space-y-2">
+                      {sizes.map((size) => (
+                        <div key={size.id} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id={`size-${index}-${size.id}`}
+                            checked={sizesField.value?.includes(size.id)}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              const updatedSizes = checked
+                                ? [...(sizesField.value || []), size.id]
+                                : (sizesField.value || []).filter(id => id !== size.id);
+                              sizesField.onChange(updatedSizes);
+                            }}
+                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                          />
+                          <label htmlFor={`size-${index}-${size.id}`} className="text-sm font-medium">
                             {size.name_uz}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}

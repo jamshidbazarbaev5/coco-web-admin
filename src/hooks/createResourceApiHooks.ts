@@ -53,7 +53,7 @@ export function createResourceApiHooks<T extends BaseResource, R = { results: T[
           const response = await api.put<T>(
             `${baseUrl}${payload.id}/`,
             payload.formData,
-            { headers: { 'Content-Type': 'multipart/form-data' } }
+           
           );
           return response.data;
         }
