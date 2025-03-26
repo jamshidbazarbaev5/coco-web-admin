@@ -27,7 +27,7 @@ export interface ProductFormData {
 }
 
 export interface Product extends Omit<ProductFormData, 'product_attributes'> {
-  id: number;
+  id?: number;
   new_price?: number; 
   product_attributes: Array<{
     id: number;

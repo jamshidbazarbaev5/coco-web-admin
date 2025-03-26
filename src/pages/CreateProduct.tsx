@@ -135,6 +135,7 @@ export function CreateProduct() {
           quantity: 0,
           new_price: 0,
           product_attributes: [{
+            id: 0,
             color_code: '#000000',
             color_name_uz: '',
             color_name_ru: '',
