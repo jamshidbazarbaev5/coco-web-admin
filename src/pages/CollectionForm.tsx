@@ -58,8 +58,8 @@ export default function CollectionPage() {
       let nextUrl: string | null = 'https://coco20.uz/api/v1/products/crud/product/';
 
       while (nextUrl) {
-        const response = await fetch(nextUrl);
-        const data = await response.json();
+        const response :any= await fetch(nextUrl);
+        const data :any= await response.json();
         allProducts = [...allProducts, ...data.results];
         nextUrl = data.next;
       }
