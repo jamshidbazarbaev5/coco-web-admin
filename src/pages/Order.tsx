@@ -17,6 +17,7 @@ export function Orders() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [newStatus, setNewStatus] = useState<string>('');
   const { mutate: updateOrder } = useUpdateOrder();
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
 
   const { data, isLoading, refetch } = useGetOrders({ params: { page } });
   const { data: productsData, refetch: refetchProducts } = useGetProducts({ params: { page: productPage, page_size: 100 } });
@@ -47,32 +48,60 @@ export function Orders() {
         return [...prev, ...newProducts];
       });
       
-      // Check if we need to load more products
-      if (productsData.count > allProducts.length && productPage * 100 < productsData.count) {
+      // If there's a next page, load more products
+      if (productsData.next) {
         setProductPage(prev => prev + 1);
       }
     }
-  }, [productsData, productPage]);
+  }, [productsData]);
+
+  useEffect(() => {
+    const loadAllProducts = async () => {
+      setIsLoadingProducts(true);
+      try {
+        let currentPage = 1;
+        let hasMore = true;
+        let allLoadedProducts: Product[] = [];
+
+        while (hasMore) {
+          const response = await fetch(`https://coco20.uz/api/v1/products/crud/product/?page=${currentPage}&page_size=100`);
+          const data = await response.json();
+          
+          allLoadedProducts = [...allLoadedProducts, ...data.results];
+          hasMore = !!data.next;
+          currentPage += 1;
+        }
+
+        setAllProducts(allLoadedProducts);
+      } catch (error) {
+        console.error('Error loading products:', error);
+      } finally {
+        setIsLoadingProducts(false);
+      }
+    };
+
+    loadAllProducts();
+  }, []); 
 
   const columns = [
     {
-      header: 'Customer Name',
+      header: 'Имя клиента',
       accessorKey: 'customer_name',
     },
     {
-      header: 'Phone',
+      header: 'Телефон',
       accessorKey: 'customer_phone',
     },
     {
-      header: 'Preferences',
+      header: 'Предпочтения',
       accessorKey: 'customer_preferences',
     },
     {
-      header: 'Status',
+      header: 'Статус',
       accessorKey: 'status',
     },
     {
-      header: 'Created At',
+      header: 'Дата создания',
       accessorKey: 'created_at',
       cell: (row: Order) => {
         return row.created_at 
@@ -81,10 +110,15 @@ export function Orders() {
       },
     },
     {
-      header: 'Products',
+      header: 'Продукты',
       accessorKey: 'order_items',
       cell: (row: Order) => {
         const orderItems = row.order_items || [];
+        
+        if (isLoadingProducts) {
+          return <div className="text-sm">Загрузка продуктов...</div>;
+        }
+
         return (
           <div className="max-w-xs">
             {orderItems.map((item: any, index: number) => {
@@ -92,15 +126,17 @@ export function Orders() {
               return (
                 <div key={index} className="text-sm">
                   <span>
-                    {product ? product.title_uz : `Product ID: ${item.product}`}, 
-                    Qty: {item.quantity}
+                    {product 
+                      ? `${product.title_ru}` 
+                      : `Продукт не найден (ID: ${item.product})`}, 
+                    Кол-во: {item.quantity}
                   </span>
                   {item.subtotal && <span> ({formatPrice(item.subtotal)})</span>}
                 </div>
               );
             })}
             {row.total_sum && (
-              <div className="font-semibold mt-1">Total: {formatPrice(row.total_sum)}</div>
+              <div className="font-semibold mt-1">Итого: {formatPrice(row.total_sum)}</div>
             )}
           </div>
         );
@@ -109,14 +145,14 @@ export function Orders() {
   ];
 
   const handleDelete = (id: number) => {
-    if (window.confirm('Are you sure you want to delete this order?')) {
+    if (window.confirm('Вы уверены, что хотите удалить этот заказ?')) {
       Promise.resolve(deleteOrder(id))
         .then(() => {
-          toast('Order deleted successfully');
+          toast('Заказ успешно удален');
           refetch();
         })
         .catch((error: Error) => {
-          toast.error('Error', {
+          toast.error('Ошибка', {
             description: error.message,
           });
         });
@@ -179,12 +215,12 @@ export function Orders() {
       updateData,
       {
         onSuccess: () => {
-          toast.success('Status updated successfully');
+          toast.success('Статус успешно обновлен');
           refetch();
           setIsFormOpen(false);
         },
         onError: (error: Error) => {
-          toast.error('Error updating status', {
+          toast.error('Ошибка при обновлении статуса', {
             description: error.message,
           });
         },
@@ -219,23 +255,23 @@ export function Orders() {
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent>
           <DialogTitle className="text-lg font-semibold mb-4">
-            {editingOrder ? 'Order Details' : 'New Order'}
+            {editingOrder ? 'Детали заказа' : 'Новый заказ'}
           </DialogTitle>
           
           {editingOrder && (
             <div className="space-y-4">
               <div className="grid gap-3">
                 <div>
-                  <strong>Customer Name:</strong> {editingOrder.customer_name}
+                  <strong>Имя клиента:</strong> {editingOrder.customer_name}
                 </div>
                 <div>
-                  <strong>Phone Number:</strong> {editingOrder.customer_phone}
+                  <strong>Номер телефона:</strong> {editingOrder.customer_phone}
                 </div>
                 <div>
-                  <strong>Preferences:</strong> {editingOrder.customer_preferences}
+                  <strong>Предпочтения:</strong> {editingOrder.customer_preferences}
                 </div>
                 <div className="flex items-center gap-2">
-                  <strong>Status:</strong>
+                  <strong>Статус:</strong>
                   <Select
                     defaultValue={editingOrder.status}
                     onValueChange={setNewStatus}
@@ -255,20 +291,20 @@ export function Orders() {
               </div>
 
               <div className="border-t pt-4">
-                <h3 className="font-medium mb-2">Order Items:</h3>
+                <h3 className="font-medium mb-2">Позиции заказа:</h3>
                 <div className="space-y-3">
                   {editingOrder.order_items?.map((item, index) => {
                     const product = allProducts.find(p => p.id === item.product);
                     return (
                       <div key={index} className="bg-gray-50 p-3 rounded">
                         <div>
-                          <strong>Product:</strong> {product?.title_uz || `Product ${item.product}`}
+                          <strong>Продукт:</strong> {product?.title_ru || `Продукт ${item.product}`}
                         </div>
                         <div>
-                          <strong>Quantity:</strong> {item.quantity}
+                          <strong>Количество:</strong> {item.quantity}
                         </div>
                         <div>
-                          <strong>Subtotal:</strong> {formatPrice(item.subtotal)}
+                          <strong>Подытог:</strong> {formatPrice(item.subtotal)}
                         </div>
                       </div>
                     );
@@ -276,14 +312,14 @@ export function Orders() {
                 </div>
                 {editingOrder.total_sum && (
                   <div className="text-right font-semibold mt-3">
-                    Total: {formatPrice(editingOrder.total_sum)}
+                    Итого: {formatPrice(editingOrder.total_sum)}
                   </div>
                 )}
               </div>
 
               <div className="flex justify-end mt-4">
                 <Button onClick={handleSaveStatus}>
-                  Save Changes
+                  Сохранить изменения
                 </Button>
               </div>
             </div>

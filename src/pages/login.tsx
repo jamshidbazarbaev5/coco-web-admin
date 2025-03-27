@@ -21,7 +21,7 @@ export function LoginPage() {
           navigate('/');
         },
         onError: () => {
-          setError('Invalid credentials');
+          setError('Неверные учетные данные');
         },
       }
     );
@@ -32,17 +32,19 @@ export function LoginPage() {
       <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow">
         <div>
           <h2 className="text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
+            Войти в аккаунт
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="text-red-500 text-sm text-center">{error}</div>
+            <div className="text-red-500 text-sm text-center">
+              {error === 'Invalid credentials' ? 'Неверные учетные данные' : error}
+            </div>
           )}
           <div className="rounded-md shadow-sm space-y-4">
             <div>
               <label htmlFor="username" className="sr-only">
-                Username
+                Имя пользователя
               </label>
               <input
                 id="username"
@@ -50,14 +52,14 @@ export function LoginPage() {
                 type="text"
                 required
                 className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                placeholder="Username"
+                placeholder="Имя пользователя"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
             </div>
             <div>
               <label htmlFor="password" className="sr-only">
-                Password
+                Пароль
               </label>
               <input
                 id="password"
@@ -65,7 +67,7 @@ export function LoginPage() {
                 type="password"
                 required
                 className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                placeholder="Password"
+                placeholder="Пароль"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -78,7 +80,7 @@ export function LoginPage() {
               disabled={isPending}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
             >
-              {isPending ? 'Signing in...' : 'Sign in'}
+              {isPending ? 'Выполняется вход...' : 'Войти'}
             </button>
           </div>
         </form>

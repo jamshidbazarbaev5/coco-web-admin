@@ -24,45 +24,45 @@ export function CategoryPage() {
 
   const columns = [
     { 
-      header: 'Image', 
+      header: 'Изображение', 
       accessorKey: 'image',
       cell: (category: any) => 
         category.image ? (
           <img 
             src={category.image} 
-            alt="Product"
+            alt="Продукт"
             className="w-16 h-16 object-cover rounded"
           />
         ) : (
           <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-gray-400">
-            No image
+            Нет изображения
           </div>
         )
     },
-    { header: 'Name (RU)', accessorKey: 'name_ru' },
-    { header: 'Name (UZ)', accessorKey: 'name_uz' },
+    { header: 'Название (РУ)', accessorKey: 'name_ru' },
+    { header: 'Название (УЗ)', accessorKey: 'name_uz' },
   ];
 
   const formFields = [
     {
       name: 'name_ru',
-      label: 'Name (Russian)',
+      label: 'Название (Русский)',
       type: 'text' as const,
-      placeholder: 'Enter category name in Russian',
+      placeholder: 'Введите название категории на русском',
       required: true,
     },
     {
       name: 'name_uz',
-      label: 'Name (Uzbek)',
+      label: 'Название (Узбекский)',
       type: 'text' as const,
-      placeholder: 'Enter category name in Uzbek',
+      placeholder: 'Введите название категории на узбекском',
       required: true,
     },
     {
       name: 'image',
-      label: 'Image',
+      label: 'Изображение',
       type: 'file' as const,
-      required: !selectedCategory, // Only required for new categories
+      required: !selectedCategory, // Обязательно только для новых категорий
     }
   ];
 
@@ -83,27 +83,27 @@ export function CategoryPage() {
         } as any,
         {
           onSuccess: () => {
-            toast.success('Category updated successfully');
+            toast.success('Категория успешно обновлена');
             setIsFormOpen(false);
             setSelectedCategory(null);
             refetch();
           },
           onError: (error) => {
             console.error('Update error:', error);
-            toast.error('Failed to update category');
+            toast.error('Не удалось обновить категорию');
           },
         }
       );
     } else {
       createCategory(formData as any, {
         onSuccess: () => {
-          toast.success('Category created successfully');
+          toast.success('Категория успешно создана');
           setIsFormOpen(false);
           refetch();
         },
         onError: (error) => {
           console.error('Create error:', error);
-          toast.error('Failed to create category');
+          toast.error('Не удалось создать категорию');
         },
       });
     }
@@ -121,13 +121,13 @@ export function CategoryPage() {
   };
 
   const handleDelete = (id: number) => {
-    if (confirm('Are you sure you want to delete this category?')) {
+    if (confirm('Вы уверены, что хотите удалить эту категорию?')) {
       deleteCategory(id, {
         onSuccess: () => {
-          toast.success('Category deleted successfully');
+          toast.success('Категория успешно удалена');
           refetch();
         },
-        onError: () => toast.error('Failed to delete category'),
+        onError: () => toast.error('Не удалось удалить категорию'),
       });
     }
   };
@@ -144,7 +144,7 @@ export function CategoryPage() {
             onSubmit={handleSubmit}
             defaultValues={selectedCategory || {}}
             isSubmitting={isCreating || isUpdating}
-            title={selectedCategory ? 'Edit Category' : 'Create Category'}
+            title={selectedCategory ? 'Редактировать категорию' : 'Создать категорию'}
           />
         </DialogContent>
       </Dialog>

@@ -31,12 +31,12 @@ export default function FeedbackPage() {
   };
   
   const handleDelete = async (id: number) => {
-    if (confirm('Are you sure you want to delete this feedback?')) {
+    if (confirm('Вы уверены, что хотите удалить этот отзыв?')) {
       try {
         await deleteMutation.mutateAsync(id);
-        toast.success('Feedback deleted successfully');
+        toast.success('Отзыв успешно удален');
       } catch (error) {
-        toast.error('Failed to delete feedback');
+        toast.error('Не удалось удалить отзыв');
       }
     }
   };
@@ -44,19 +44,19 @@ export default function FeedbackPage() {
   const formFields: FormField[] = [
     {
       name: 'name',
-      label: 'Name',
+      label: 'Имя',
       type: 'text',
       readOnly: true,
     },
     {
       name: 'phone_number',
-      label: 'Phone Number',
+      label: 'Номер телефона',
       type: 'text',
       readOnly: true,
     },
     {
       name: 'feedback',
-      label: 'Feedback',
+      label: 'Отзыв',
       type: 'textarea',
       readOnly: true,
     },
@@ -64,25 +64,25 @@ export default function FeedbackPage() {
   
   const columns = [
     {
-      header: 'Name',
+      header: 'Имя',
       accessorKey: 'name',
     },
     {
-      header: 'Phone Number',
+      header: 'Номер телефона',
       accessorKey: 'phone_number',
     },
     {
-      header: 'Feedback',
+      header: 'Отзыв',
       accessorKey: 'feedback',
       cell: (row: Feedback) => (
         <div className="max-w-xs truncate">{row.feedback}</div>
       ),
     },
     {
-      header: 'Date',
+      header: 'Дата',
       accessorKey: 'created_at',
       cell: (row: Feedback) => (
-        row.created_at ? new Date(row.created_at).toLocaleDateString() : 'N/A'
+        row.created_at ? new Date(row.created_at).toLocaleDateString() : 'Н/Д'
       ),
     },
   ];
@@ -103,7 +103,7 @@ export default function FeedbackPage() {
       
       <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
         <DialogContent>
-          <DialogTitle>View Feedback</DialogTitle>
+          <DialogTitle>Просмотр отзыва</DialogTitle>
           <ResourceForm
             fields={formFields}
             onSubmit={() => {}}

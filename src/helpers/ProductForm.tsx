@@ -28,26 +28,26 @@ interface ProductFormProps {
 }
 
 const productSchema = z.object({
-  brand: z.coerce.number().min(1, 'Brand is required'),
-  category: z.coerce.number().min(1, 'Category is required'),
-  title_uz: z.string().min(1, 'Title (UZ) is required'),
-  title_ru: z.string().min(1, 'Title (RU) is required'),
-  description_uz: z.string().min(1, 'Description (UZ) is required'),
-  description_ru: z.string().min(1, 'Description (RU) is required'),
-  material: z.coerce.number().min(1, 'Material is required'),
-  price: z.coerce.number().min(0, 'Price must be positive'),
-  quantity: z.coerce.number().min(0, 'Quantity must be positive'),
+  brand: z.coerce.number().min(1, 'Бренд обязателен'),
+  category: z.coerce.number().min(1, 'Категория обязательна'),
+  title_uz: z.string().min(1, 'Название (UZ) обязательно'),
+  title_ru: z.string().min(1, 'Название (RU) обязательно'),
+  description_uz: z.string().min(1, 'Описание (UZ) обязательно'),
+  description_ru: z.string().min(1, 'Описание (RU) обязательно'),
+  material: z.coerce.number().min(1, 'Материал обязателен'),
+  price: z.coerce.number().min(0, 'Цена должна быть положительной'),
+  quantity: z.coerce.number().min(0, 'Количество должно быть положительным'),
   new_price: z.coerce.number().min(0).optional(),
   product_attributes: z.array(z.object({
-    color_code: z.string().min(1, 'Color code is required'),
-    color_name_uz: z.string().min(1, 'Color name (UZ) is required'),
-    color_name_ru: z.string().min(1, 'Color name (RU) is required'),
+    color_code: z.string().min(1, 'Код цвета обязателен'),
+    color_name_uz: z.string().min(1, 'Название цвета (UZ) обязательно'),
+    color_name_ru: z.string().min(1, 'Название цвета (RU) обязательно'),
     image: z.union([
       z.instanceof(File),
       z.string()
     ]),
-    sizes: z.array(z.coerce.number()).min(1, 'At least one size is required'),
-  })).min(1, 'At least one product attribute is required'),
+    sizes: z.array(z.coerce.number()).min(1, 'Выберите хотя бы один размер'),
+  })).min(1, 'Добавьте хотя бы один атрибут продукта'),
 });
 
 // Define the type from the schema to ensure they match
@@ -136,14 +136,14 @@ export function ProductForm({
               name="brand"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Brand</FormLabel>
+                  <FormLabel>Бренд</FormLabel>
                   <Select 
                     onValueChange={(value) => field.onChange(Number(value))}
                     value={field.value ? String(field.value) : undefined}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select brand" />
+                        <SelectValue placeholder="Выберите бренд" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -164,7 +164,7 @@ export function ProductForm({
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category</FormLabel>
+                  <FormLabel>Категория</FormLabel>
                   <Select 
                     onValueChange={(value) => field.onChange(Number(value))}
                     value={field.value ? String(field.value) : undefined}
@@ -172,7 +172,7 @@ export function ProductForm({
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
+                        <SelectValue placeholder="Выберите категорию" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -193,14 +193,14 @@ export function ProductForm({
               name="material"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Material</FormLabel>
+                  <FormLabel>Материал</FormLabel>
                   <Select 
                     onValueChange={(value) => field.onChange(Number(value))}
                     value={field.value ? String(field.value) : undefined}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select material" />
+                        <SelectValue placeholder="Выберите материал" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -224,7 +224,7 @@ export function ProductForm({
               name="price"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Price</FormLabel>
+                  <FormLabel>Цена</FormLabel>
                   <FormControl>
                     <Input type="number" {...field} />
                   </FormControl>
@@ -238,7 +238,7 @@ export function ProductForm({
               name="quantity"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Quantity</FormLabel>
+                  <FormLabel>Количество</FormLabel>
                   <FormControl>
                     <Input type="number" {...field} />
                   </FormControl>
@@ -257,7 +257,7 @@ export function ProductForm({
               name="title_uz"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title (UZ)</FormLabel>
+                  <FormLabel>Название (UZ)</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -271,7 +271,7 @@ export function ProductForm({
               name="description_uz"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description (UZ)</FormLabel>
+                  <FormLabel>Описание (UZ)</FormLabel>
                   <FormControl>
                     <Textarea {...field} />
                   </FormControl>
@@ -287,7 +287,7 @@ export function ProductForm({
               name="title_ru"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title (RU)</FormLabel>
+                  <FormLabel>Название (RU)</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -301,7 +301,7 @@ export function ProductForm({
               name="description_ru"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description (RU)</FormLabel>
+                  <FormLabel>Описание (RU)</FormLabel>
                   <FormControl>
                     <Textarea {...field} />
                   </FormControl>
@@ -319,7 +319,7 @@ export function ProductForm({
             name="new_price"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>New Price (Sale Price)</FormLabel>
+                <FormLabel>Новая цена (Цена со скидкой)</FormLabel>
                 <FormControl>
                   <Input 
                     type="number" 
@@ -335,9 +335,9 @@ export function ProductForm({
         </div>
 
         {/* Product Attributes */}
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Product Attributes</h3>
+        <div className="space-y-6">
+          <div className="flex justify-between items-center border-b pb-4">
+            <h3 className="text-lg font-semibold">Атрибуты продукта</h3>
             <Button
               type="button"
               onClick={() => append({
@@ -349,142 +349,151 @@ export function ProductForm({
               })}
               variant="outline"
             >
-              <PlusIcon className="w-4 h-4 mr-2" /> Add Attribute
+              <PlusIcon className="w-4 h-4 mr-2" /> Добавить атрибут
             </Button>
           </div>
 
           {fields.map((field, index) => (
-            <div key={field.id} className="flex gap-4 items-start border p-4 rounded-lg">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                {/* Color Code */}
-                <FormField
-                  control={form.control}
-                  name={`product_attributes.${index}.color_code`}
-                  render={({ field: colorCodeField }) => (
-                    <FormItem>
-                      <FormLabel>Color Code</FormLabel>
-                      <div className="flex items-center gap-2">
-                        <Input 
-                          type="color" 
-                          {...colorCodeField}
-                          className="w-12 h-10 p-1"
-                        />
-                        <Input 
-                          {...colorCodeField}
-                          className="flex-1"
-                        />
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Color Name UZ */}
-                <FormField
-                  control={form.control}
-                  name={`product_attributes.${index}.color_name_uz`}
-                  render={({ field: colorNameUzField }) => (
-                    <FormItem>
-                      <FormLabel>Color Name (UZ)</FormLabel>
-                      <FormControl>
-                        <Input {...colorNameUzField} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Color Name RU */}
-                <FormField
-                  control={form.control}
-                  name={`product_attributes.${index}.color_name_ru`}
-                  render={({ field: colorNameRuField }) => (
-                    <FormItem>
-                      <FormLabel>Color Name (RU)</FormLabel>
-                      <FormControl>
-                        <Input {...colorNameRuField} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-               
+            <div key={field.id} className="bg-gray-50 rounded-lg p-6 space-y-6">
+              <div className="flex justify-between items-start">
+                <h4 className="text-sm font-medium text-gray-700">Атрибут #{index + 1}</h4>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => remove(index)}
+                  className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                >
+                  <TrashIcon className="w-4 h-4" />
+                </Button>
               </div>
 
-              <FormField
-                control={form.control}
-                name={`product_attributes.${index}.sizes`}
-                render={({ field: sizesField }) => (
-                  <FormItem className="flex-1">
-                    <FormLabel>Sizes</FormLabel>
-                    <div className="space-y-2">
-                      {sizes.map((size) => (
-                        <div key={size.id} className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id={`size-${index}-${size.id}`}
-                            checked={sizesField.value?.includes(size.id)}
-                            onChange={(e) => {
-                              const checked = e.target.checked;
-                              const updatedSizes = checked
-                                ? [...(sizesField.value || []), size.id]
-                                : (sizesField.value || []).filter(id => id !== size.id);
-                              sizesField.onChange(updatedSizes);
-                            }}
-                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Color Section */}
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name={`product_attributes.${index}.color_code`}
+                    render={({ field: colorCodeField }) => (
+                      <FormItem>
+                        <FormLabel>Код цвета</FormLabel>
+                        <div className="flex items-center gap-2">
+                          <Input 
+                            type="color" 
+                            {...colorCodeField}
+                            className="w-12 h-10 p-1 rounded"
                           />
-                          <label htmlFor={`size-${index}-${size.id}`} className="text-sm font-medium">
-                            {size.name_uz}
-                          </label>
+                          <Input 
+                            {...colorCodeField}
+                            className="flex-1"
+                          />
                         </div>
-                      ))}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name={`product_attributes.${index}.image`}
-                render={({ field }) => (
-                  <FormItem className="flex-1">
-                    <FormLabel>Image</FormLabel>
-                    {typeof field.value === 'string' && (
-                      <div className="mb-2">
-                        <img 
-                          src={field.value} 
-                          alt="Product" 
-                          className="w-20 h-20 object-cover rounded"
-                        />
-                      </div>
+                        <FormMessage />
+                      </FormItem>
                     )}
-                    <FormControl>
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            field.onChange(file);
-                          }
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name={`product_attributes.${index}.color_name_uz`}
+                    render={({ field: colorNameUzField }) => (
+                      <FormItem>
+                        <FormLabel>Название цвета (UZ)</FormLabel>
+                        <FormControl>
+                          <Input {...colorNameUzField} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name={`product_attributes.${index}.color_name_ru`}
+                    render={({ field: colorNameRuField }) => (
+                      <FormItem>
+                        <FormLabel>Название цвета (RU)</FormLabel>
+                        <FormControl>
+                          <Input {...colorNameRuField} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-              <Button
-                type="button"
-                variant="ghost"
-                className="mt-8"
-                onClick={() => remove(index)}
-              >
-                <TrashIcon className="w-4 h-4 text-red-500" />
-              </Button>
+                {/* Sizes Section */}
+                <FormField
+                  control={form.control}
+                  name={`product_attributes.${index}.sizes`}
+                  render={({ field: sizesField }) => (
+                    <FormItem>
+                      <FormLabel>Размеры</FormLabel>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-4 border rounded-lg bg-white">
+                        {sizes.map((size) => (
+                          <div key={size.id} className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id={`size-${index}-${size.id}`}
+                              checked={sizesField.value?.includes(size.id)}
+                              onChange={(e) => {
+                                const checked = e.target.checked;
+                                const updatedSizes = checked
+                                  ? [...(sizesField.value || []), size.id]
+                                  : (sizesField.value || []).filter(id => id !== size.id);
+                                sizesField.onChange(updatedSizes);
+                              }}
+                              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                            />
+                            <label 
+                              htmlFor={`size-${index}-${size.id}`} 
+                              className="text-sm text-gray-700 cursor-pointer"
+                            >
+                              {size.name_uz}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Image Section */}
+                <FormField
+                  control={form.control}
+                  name={`product_attributes.${index}.image`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Изображение</FormLabel>
+                      <div className="space-y-4">
+                        {typeof field.value === 'string' && (
+                          <div className="relative w-32 h-32 rounded-lg overflow-hidden border">
+                            <img 
+                              src={field.value} 
+                              alt="Product" 
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <FormControl>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                field.onChange(file);
+                              }
+                            }}
+                            className="bg-white"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
           ))}
         </div>
@@ -504,13 +513,13 @@ export function ProductForm({
             console.log('Form errors:', form.formState.errors);
           }}
         >
-          {isSubmitting ? 'Saving...' : 'Save Product'}
+          {isSubmitting ? 'Сохранение...' : 'Сохранить продукт'}
         </Button>
 
         {/* Add error display */}
         {Object.keys(form.formState.errors).length > 0 && (
           <div className="text-red-500 mt-4">
-            <p>Form has errors:</p>
+            <p>В форме есть ошибки:</p>
             <pre>{JSON.stringify(form.formState.errors, null, 2)}</pre>
           </div>
         )}

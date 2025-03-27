@@ -32,7 +32,7 @@ export function BrandsPage() {
       accessorKey: 'displayId',
     },
     {
-      header: 'Name',
+      header: 'Название',
       accessorKey: 'name',
     },
   ];
@@ -40,9 +40,9 @@ export function BrandsPage() {
   const formFields: FormField[] = [
     {
       name: 'name',
-      label: 'Brand Name',
+      label: 'Название бренда',
       type: 'text',
-      placeholder: 'Enter brand name',
+      placeholder: 'Введите название бренда',
       required: true,
     },
   ];
@@ -53,20 +53,20 @@ export function BrandsPage() {
         { id: editingBrand.id, name: data.name! } as Brand,
         {
           onSuccess: () => {
-            toast.success('Brand updated successfully');
+            toast.success('Бренд успешно обновлен');
             setIsFormOpen(false);
             setEditingBrand(null);
           },
-          onError: () => toast.error('Failed to update brand'),
+          onError: () => toast.error('Не удалось обновить бренд'),
         }
       );
     } else {
       createBrand(data as Brand, {
         onSuccess: () => {
-          toast.success('Brand created successfully');
+          toast.success('Бренд успешно создан');
           setIsFormOpen(false);
         },
-        onError: () => toast.error('Failed to create brand'),
+        onError: () => toast.error('Не удалось создать бренд'),
       });
     }
   };
@@ -77,10 +77,10 @@ export function BrandsPage() {
   };
 
   const handleDelete = (id: number) => {
-    if (confirm('Are you sure you want to delete this brand?')) {
+    if (confirm('Вы уверены, что хотите удалить этот бренд?')) {
       deleteBrand(id, {
-        onSuccess: () => toast.success('Brand deleted successfully'),
-        onError: () => toast.error('Failed to delete brand'),
+        onSuccess: () => toast.success('Бренд успешно удален'),
+        onError: () => toast.error('Не удалось удалить бренд'),
       });
     }
   };
@@ -110,7 +110,7 @@ export function BrandsPage() {
             onSubmit={handleSubmit}
             defaultValues={editingBrand || {}}
             isSubmitting={isCreating || isUpdating}
-            title={editingBrand ? 'Edit Brand' : 'Create Brand'}
+            title={editingBrand ? 'Редактировать бренд' : 'Создать бренд'}
           />
         </DialogContent>
       </Dialog>

@@ -53,51 +53,51 @@ export function ContactDetailsPage() {
   const formFields = [
     {
       name: 'address_uz',
-      label: 'Address (UZ)',
+      label: 'Адрес (UZ)',
       type: 'textarea' as const,
       required: true,
     },
     {
       name: 'address_ru',
-      label: 'Address (RU)',
+      label: 'Адрес (RU)',
       type: 'textarea' as const,
       required: true,
     },
     {
       name: 'phone',
-      label: 'Phone',
+      label: 'Телефон',
       type: 'text' as const,
       required: true,
     },
     {
       name: 'map_url',
-      label: 'Map URL',
+      label: 'Ссылка на карту',
       type: 'text' as const,
       required: true,
     },
     {
       name: 'instagram',
-      label: 'Instagram URL',
+      label: 'Ссылка Instagram',
       type: 'text' as const,
     },
     {
       name: 'telegram',
-      label: 'Telegram URL',
+      label: 'Ссылка Telegram',
       type: 'text' as const,
     },
     {
       name: 'facebook',
-      label: 'Facebook URL',
+      label: 'Ссылка Facebook',
       type: 'text' as const,
     },
   ];
 
   const columns = [
-    { header: 'Address (UZ)', accessorKey: 'address_uz' },
-    { header: 'Address (RU)', accessorKey: 'address_ru' },
-    { header: 'Phone', accessorKey: 'phone' },
+    { header: 'Адрес (UZ)', accessorKey: 'address_uz' },
+    { header: 'Адрес (RU)', accessorKey: 'address_ru' },
+    { header: 'Телефон', accessorKey: 'phone' },
     {
-      header: 'Social Media',
+      header: 'Социальные сети',
       accessorKey: (row: ContactDetail) => {
         const urls = row.social_media_urls || {};
         return (
@@ -145,7 +145,7 @@ export function ContactDetailsPage() {
             onSubmit={handleSubmit}
             defaultValues={editingItem || {}}
             isSubmitting={isCreating || isUpdating}
-            title={editingItem ? 'Edit Contact Details' : 'Add Contact Details'}
+            title={editingItem ? 'Редактировать контактные данные' : 'Добавить контактные данные'}
           />
         </DialogContent>
       </Dialog>

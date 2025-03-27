@@ -61,7 +61,7 @@ export default function CollectionPage() {
   const formFields: FormField[] = [
     {
       name: 'product',
-      label: 'Product',
+      label: 'Продукт',
       type: 'select',
       required: true,
       options: products.map(p => ({
@@ -71,37 +71,37 @@ export default function CollectionPage() {
     },
     {
       name: 'title_uz',
-      label: 'Title (UZ)',
+      label: 'Название (УЗ)',
       type: 'text',
       required: true,
     },
     {
       name: 'title_ru',
-      label: 'Title (RU)',
+      label: 'Название (РУ)',
       type: 'text',
       required: true,
     },
     {
       name: 'caption_uz',
-      label: 'Caption (UZ)',
+      label: 'Подпись (УЗ)',
       type: 'text',
       required: true,
     },
     {
       name: 'caption_ru',
-      label: 'Caption (RU)',
+      label: 'Подпись (РУ)',
       type: 'text',
       required: true,
     },
     {
       name: 'description_uz',
-      label: 'Description (UZ)',
+      label: 'Описание (УЗ)',
       type: 'textarea',
       required: true,
     },
     {
       name: 'description_ru',
-      label: 'Description (RU)',
+      label: 'Описание (РУ)',
       type: 'textarea',
       required: true,
     },
@@ -109,7 +109,7 @@ export default function CollectionPage() {
 
   const columns: any= [
     {
-      header: 'Product',
+      header: 'Продукт',
       accessorKey: 'product_details',
       cell: (item: Collection) => {
         const product = item.product_details;
@@ -122,20 +122,20 @@ export default function CollectionPage() {
       }
     },
     {
-      header: 'Collection Title',
+      header: 'Название коллекции',
       cell: (item: Collection) => (
         <div>
-          <div>UZ: {item.title_uz}</div>
-          <div>RU: {item.title_ru}</div>
+          <div>УЗ: {item.title_uz}</div>
+          <div>РУ: {item.title_ru}</div>
         </div>
       )
     },
     {
-      header: 'Collection Caption',
+      header: 'Подпись коллекции',
       cell: (item: Collection) => (
         <div>
-          <div>UZ: {item.caption_uz}</div>
-          <div>RU: {item.caption_ru}</div>
+          <div>УЗ: {item.caption_uz}</div>
+          <div>РУ: {item.caption_ru}</div>
         </div>
       )
     }
@@ -179,7 +179,7 @@ export default function CollectionPage() {
   };
 
   const handleDelete = (id: number) => {
-    if (window.confirm('Are you sure you want to delete this collection?')) {
+    if (window.confirm('Вы уверены, что хотите удалить эту коллекцию?')) {
       deleteCollection(id, {
         onSuccess: () => refetch(),
       });
@@ -211,7 +211,7 @@ export default function CollectionPage() {
             onSubmit={handleSubmit}
             defaultValues={editingCollection || undefined}
             isSubmitting={isCreating || isUpdating}
-            title={editingCollection ? 'Edit Collection' : 'Create Collection'}
+            title={editingCollection ? 'Редактировать коллекцию' : 'Создать коллекцию'}
           />
         </DialogContent>
       </Dialog>

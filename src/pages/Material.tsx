@@ -26,11 +26,11 @@ export function MaterialsPage() {
 
   const columns = [
     {
-      header: 'Name (Russian)',
+      header: 'Название (Русский)',
       accessorKey: 'name_ru',
     },
     {
-      header: 'Name (Uzbek)',
+      header: 'Название (Узбекский)',
       accessorKey: 'name_uz',
     },
   ];
@@ -38,16 +38,16 @@ export function MaterialsPage() {
   const formFields: FormField[] = [
     {
       name: 'name_ru',
-      label: 'Name (Russian)',
+      label: 'Название (Русский)',
       type: 'text',
-      placeholder: 'Enter material name in Russian',
+      placeholder: 'Введите название материала на русском',
       required: true,
     },
     {
       name: 'name_uz',
-      label: 'Name (Uzbek)',
+      label: 'Название (Узбекский)',
       type: 'text',
-      placeholder: 'Enter material name in Uzbek',
+      placeholder: 'Введите название материала на узбекском',
       required: true,
     },
   ];
@@ -75,7 +75,7 @@ export function MaterialsPage() {
   };
 
   const handleDelete = (id: number) => {
-    if (confirm('Are you sure you want to delete this material?')) {
+    if (confirm('Вы уверены, что хотите удалить этот материал?')) {
       deleteMaterial(id);
     }
   };
@@ -113,7 +113,7 @@ export function MaterialsPage() {
             onSubmit={handleSubmit}
             defaultValues={editingMaterial || {}}
             isSubmitting={isCreating || isUpdating}
-            title={editingMaterial ? 'Edit Material' : 'Add New Material'}
+            title={editingMaterial ? 'Редактировать материал' : 'Добавить новый материал'}
           />
         </DialogContent>
       </Dialog>

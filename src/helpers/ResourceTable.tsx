@@ -90,10 +90,10 @@ export function ResourceTable<T extends { id?: number }>({
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold">Resources</h2>
+        <h2 className="text-xl font-bold">Ресурсы</h2>
         {onAdd && (
           <Button onClick={onAdd} className="flex items-center gap-1">
-            <PlusIcon className="h-4 w-4" /> Add New
+            <PlusIcon className="h-4 w-4" /> Добавить новый
           </Button>
         )}
       </div>
@@ -109,7 +109,7 @@ export function ResourceTable<T extends { id?: number }>({
               ))}
               {(onEdit || onDelete) && (
                 <TableHead className="text-xs uppercase text-gray-500 font-medium text-right">
-                  Actions
+                  Действия
                 </TableHead>
               )}
             </TableRow>
@@ -118,13 +118,13 @@ export function ResourceTable<T extends { id?: number }>({
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={columns.length + (onEdit || onDelete ? 1 : 0)} className="text-center text-gray-500">
-                  Loading...
+                  Загрузка...
                 </TableCell>
               </TableRow>
             ) : data.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={columns.length + (onEdit || onDelete ? 1 : 0)} className="text-center text-gray-500">
-                  No data available
+                  Данные отсутствуют
                 </TableCell>
               </TableRow>
             ) : (

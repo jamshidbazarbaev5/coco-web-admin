@@ -209,7 +209,6 @@ export function EditProduct() {
           }
         }
         
-        // Handle sizes
         if (attr.sizes && attr.sizes.length > 0) {
           attr.sizes.forEach((sizeId: number, sizeIndex: number) => {
             submitFormData.append(
@@ -222,14 +221,12 @@ export function EditProduct() {
 
       console.log('Submitting form data:', Object.fromEntries(submitFormData.entries()));
       
-      // Make the API request
       await api.put(`/products/crud/product/${id}/`, submitFormData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
       
-      // Reset deleted attributes after successful submission
       setDeletedAttributes([]);
       navigate('/products');
     } catch (error) {
@@ -251,37 +248,36 @@ export function EditProduct() {
   return (
     <div className="container mx-auto py-6 px-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Edit Product</h1>
+        <h1 className="text-3xl font-bold">Редактировать товар</h1>
         <Button variant="outline" onClick={() => navigate('/products')}>
-          Back to Products
+          Назад к товарам
         </Button>
       </div>
       
       <form onSubmit={handleSubmit}>
         <Tabs defaultValue="basic" className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="basic">Basic Information</TabsTrigger>
-            <TabsTrigger value="details">Product Details</TabsTrigger>
-            <TabsTrigger value="attributes">Attributes & Variants</TabsTrigger>
+            <TabsTrigger value="basic">Основная информация</TabsTrigger>
+            <TabsTrigger value="details">Детали товара</TabsTrigger>
+            <TabsTrigger value="attributes">Атрибуты и варианты</TabsTrigger>
           </TabsList>
           
           {/* Basic Information Tab */}
           <TabsContent value="basic">
             <Card className="border-0 shadow-none">
               <CardHeader className="border-0">
-                <CardTitle>Basic Information</CardTitle>
+                <CardTitle>Основная информация</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Brand */}
                   <div className="space-y-2">
-                    <Label htmlFor="brand">Brand</Label>
+                    <Label htmlFor="brand">Бренд</Label>
                     <Select 
                       value={formData.brand?.toString()} 
                       onValueChange={(value) => handleSelectChange('brand', value)}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select brand" />
+                        <SelectValue placeholder="Выберите бренд" />
                       </SelectTrigger>
                       <SelectContent>
                         {allBrands.map((brand) => (
@@ -293,15 +289,14 @@ export function EditProduct() {
                     </Select>
                   </div>
                   
-                  {/* Category */}
                   <div className="space-y-2">
-                    <Label htmlFor="category">Category</Label>
+                    <Label htmlFor="category">Категория</Label>
                     <Select 
                       value={formData.category?.toString()} 
                       onValueChange={(value) => handleSelectChange('category', value)}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
+                        <SelectValue placeholder="Выберите категорию" />
                       </SelectTrigger>
                       <SelectContent>
                         {allCategories.map((category) => (
@@ -313,15 +308,14 @@ export function EditProduct() {
                     </Select>
                   </div>
                   
-                  {/* Material */}
                   <div className="space-y-2">
-                    <Label htmlFor="material">Material</Label>
+                    <Label htmlFor="material">Материал</Label>
                     <Select 
                       value={formData.material?.toString()} 
                       onValueChange={(value) => handleSelectChange('material', value)}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select material" />
+                        <SelectValue placeholder="Выберите материал" />
                       </SelectTrigger>
                       <SelectContent>
                         {allMaterials.map((material) => (
@@ -341,13 +335,12 @@ export function EditProduct() {
           <TabsContent value="details">
             <Card className="border-0 shadow-none">
               <CardHeader className="border-0">
-                <CardTitle>Product Details</CardTitle>
+                <CardTitle>Детали товара</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Title UZ */}
                   <div className="space-y-2">
-                    <Label htmlFor="title_uz">Title (UZ)</Label>
+                    <Label htmlFor="title_uz">Название (UZ)</Label>
                     <Input 
                       id="title_uz" 
                       name="title_uz" 
@@ -356,9 +349,8 @@ export function EditProduct() {
                     />
                   </div>
                   
-                  {/* Title RU */}
                   <div className="space-y-2">
-                    <Label htmlFor="title_ru">Title (RU)</Label>
+                    <Label htmlFor="title_ru">Название (RU)</Label>
                     <Input 
                       id="title_ru" 
                       name="title_ru" 
@@ -369,9 +361,8 @@ export function EditProduct() {
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Description UZ */}
                   <div className="space-y-2">
-                    <Label htmlFor="description_uz">Description (UZ)</Label>
+                    <Label htmlFor="description_uz">Описание (UZ)</Label>
                     <Textarea 
                       id="description_uz" 
                       name="description_uz" 
@@ -381,9 +372,8 @@ export function EditProduct() {
                     />
                   </div>
                   
-                  {/* Description RU */}
                   <div className="space-y-2">
-                    <Label htmlFor="description_ru">Description (RU)</Label>
+                    <Label htmlFor="description_ru">Описание (RU)</Label>
                     <Textarea 
                       id="description_ru" 
                       name="description_ru" 
@@ -395,9 +385,8 @@ export function EditProduct() {
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Price */}
                   <div className="space-y-2">
-                    <Label htmlFor="price">Price</Label>
+                    <Label htmlFor="price">Цена</Label>
                     <Input 
                       id="price" 
                       name="price" 
@@ -407,22 +396,20 @@ export function EditProduct() {
                     />
                   </div>
                   
-                  {/* New Price */}
                   <div className="space-y-2">
-                    <Label htmlFor="new_price">Sale Price</Label>
+                    <Label htmlFor="new_price">Цена со скидкой</Label>
                     <Input 
                       id="new_price" 
                       name="new_price" 
                       type="number" 
                       value={formData.new_price || ''} 
                       onChange={handleInputChange} 
-                      placeholder="Leave empty if no sale"
+                      placeholder="Оставьте пустым, если нет скидки"
                     />
                   </div>
                   
-                  {/* Quantity */}
                   <div className="space-y-2">
-                    <Label htmlFor="quantity">Quantity</Label>
+                    <Label htmlFor="quantity">Количество</Label>
                     <Input 
                       id="quantity" 
                       name="quantity" 
@@ -440,21 +427,21 @@ export function EditProduct() {
           <TabsContent value="attributes">
             <Card className="border-0 shadow-none">
               <CardHeader className="border-0 flex flex-row items-center justify-between">
-                <CardTitle>Product Attributes & Variants</CardTitle>
+                <CardTitle>Атрибуты и варианты товара</CardTitle>
                 <Button 
                   type="button" 
                   onClick={addAttribute} 
                   variant="outline" 
                   size="sm"
                 >
-                  <PlusIcon className="h-4 w-4 mr-2" /> Add Variant
+                  <PlusIcon className="h-4 w-4 mr-2" /> Добавить вариант
                 </Button>
               </CardHeader>
               <CardContent>
                 {productAttributes.map((attr, index) => (
                   <div key={index} className="mb-6 p-4 bg-gray-50 rounded-lg">
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="font-medium">Variant {index + 1}</h3>
+                      <h3 className="font-medium">Вариант {index + 1}</h3>
                       <Button 
                         type="button" 
                         onClick={() => removeAttribute(index)} 
@@ -466,9 +453,8 @@ export function EditProduct() {
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                      {/* Color Section */}
                       <div className="space-y-2">
-                        <Label htmlFor={`color-${index}`}>Color</Label>
+                        <Label htmlFor={`color-${index}`}>Цвет</Label>
                         <div className="flex flex-col gap-4">
                           <div className="flex items-center gap-2">
                             <Input 
@@ -507,9 +493,8 @@ export function EditProduct() {
                         </div>
                       </div>
                       
-                      {/* Sizes */}
                       <div className="space-y-2">
-                        <Label htmlFor={`sizes-${index}`}>Sizes</Label>
+                        <Label htmlFor={`sizes-${index}`}>Размеры</Label>
                         <div className="space-y-2 bg-white p-2 rounded max-h-40 overflow-y-auto">
                           {allSizes.map((size) => (
                             <div key={size.id} className="flex items-center space-x-2">
@@ -535,10 +520,9 @@ export function EditProduct() {
                         </div>
                       </div>
                       
-                      {/* Image */}
                       <div className="space-y-2">
                         <Label htmlFor={`image-${index}`}>
-                          Image <span className="text-red-500">*</span>
+                          Изображение <span className="text-red-500">*</span>
                         </Label>
                         {attr.image && !attr.newImage && (
                           <div className="mb-2">
@@ -568,7 +552,7 @@ export function EditProduct() {
                 
                 {productAttributes.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
-                    No variants added yet. Click "Add Variant" to create one.
+                    Вариантов пока нет. Нажмите "Добавить вариант" чтобы создать.
                   </div>
                 )}
               </CardContent>
@@ -582,13 +566,13 @@ export function EditProduct() {
             variant="outline" 
             onClick={() => navigate('/products')}
           >
-            Cancel
+            Отмена
           </Button>
           <Button 
             type="submit" 
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Saving...' : 'Save Product'}
+            {isSubmitting ? 'Сохранение...' : 'Сохранить товар'}
           </Button>
         </div>
       </form>

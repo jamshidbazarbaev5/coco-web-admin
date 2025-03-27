@@ -19,55 +19,55 @@ export function ProductsPage() {
   }));
    
   const formatPrice = (price: any) => {
-    // Convert price to string if it's a number
+    // Конвертировать цену в строку, если это число
     const priceStr = typeof price === 'number' ? price.toString() : price;
     
-    // Convert price string to number, removing any non-digit characters except decimal point
+    // Конвертировать строку цены в число, удаляя все символы кроме цифр и точки
     const numPrice = Number(priceStr.replace(/[^\d.]/g, ''));
     
-    // Format with spaces between thousands
+    // Форматировать с пробелами между тысячами
     const formattedPrice = Math.floor(numPrice)
       .toString()
       .replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
     
-    // Return formatted price with 'uzs' suffix
-    return `${formattedPrice} uzs`;
+    // Вернуть отформатированную цену с суффиксом 'сум'
+    return `${formattedPrice} сум`;
   }
   const columns = [
     {
-      header: 'ID',
+      header: 'ИД',
       accessorKey: 'displayId',
     },
     {
-      header: 'Image',
+      header: 'Изображение',
       accessorKey: 'image',
       cell: (product: Product) => (
         product?.product_attributes[0]?.image ? (
           <img 
             src={product.product_attributes[0].image} 
-            alt="Product"
+            alt="Товар"
             className="w-16 h-16 object-cover rounded"
           />
         ) : (
-          <span className="text-gray-400">No image</span>
+          <span className="text-gray-400">Нет изображения</span>
         )
       ),
     },
    
     {
-      header: 'Title (RU)',
+      header: 'Название (РУ)',
       accessorKey: 'title_ru',
     },
     {
-      header: 'Price',
+      header: 'Цена',
       accessorKey: (product: Product) => `${formatPrice(product.price)}`,
     },
     {
-      header: 'Quantity',
+      header: 'Количество',
       accessorKey: 'quantity',
     },
     {
-      header: 'Variants',
+      header: 'Варианты',
       accessorKey: 'product_attributes',
       cell: (product: Product) => (
         <div className="flex gap-1 flex-wrap">
@@ -91,7 +91,7 @@ export function ProductsPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
+    if (window.confirm('Вы уверены, что хотите удалить этот товар?')) {
       await deleteProduct.mutateAsync(id);
     }
   };

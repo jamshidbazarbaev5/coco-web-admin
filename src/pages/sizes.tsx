@@ -33,9 +33,9 @@ export function SizesPage() {
   const sizeFields: FormField[] = [
     {
       name: 'name',
-      label: 'Size Name',
+      label: 'Название размера',
       type: 'text',
-      placeholder: 'Enter size name (e.g., Small, Medium, Large)',
+      placeholder: 'Введите название размера (например, Маленький, Средний, Большой)',
       required: true,
     },
   ];
@@ -43,11 +43,11 @@ export function SizesPage() {
   // Table columns definition
   const columns = [
     {
-      header: 'ID',
+      header: 'ИД',
       accessorKey: 'displayId',
     },
     {
-      header: 'Name',
+      header: 'Название',
       accessorKey: 'name',
     },
   ];
@@ -58,20 +58,20 @@ export function SizesPage() {
         { id: editingSize.id, name: data.name! } as Size,
         {
           onSuccess: () => {
-            toast.success('Size updated successfully');
+            toast.success('Размер успешно обновлен');
             setIsFormOpen(false);
             setEditingSize(null);
           },
-          onError: () => toast.error('Failed to update size'),
+          onError: () => toast.error('Не удалось обновить размер'),
         }
       );
     } else {
       createSize(data as Size, {
         onSuccess: () => {
-          toast.success('Size created successfully');
+          toast.success('Размер успешно создан');
           setIsFormOpen(false);
         },
-        onError: () => toast.error('Failed to create size'),
+        onError: () => toast.error('Не удалось создать размер'),
       });
     }
   };
@@ -82,17 +82,17 @@ export function SizesPage() {
   };
 
   const handleDelete = (id: number) => {
-    if (confirm('Are you sure you want to delete this size?')) {
+    if (confirm('Вы уверены, что хотите удалить этот размер?')) {
       deleteSize(id, {
-        onSuccess: () => toast.success('Size deleted successfully'),
-        onError: () => toast.error('Failed to delete size'),
+        onSuccess: () => toast.success('Размер успешно удален'),
+        onError: () => toast.error('Не удалось удалить размер'),
       });
     }
   };
 
   return (
     <div className="container mx-auto py-6">
-      <h1 className="text-2xl font-bold mb-6">Size Management</h1>
+      <h1 className="text-2xl font-bold mb-6">Управление размерами</h1>
       
       <ResourceTable
         data={sizes}
@@ -117,7 +117,7 @@ export function SizesPage() {
             onSubmit={handleSubmit}
             defaultValues={editingSize || {}}
             isSubmitting={isCreating || isUpdating}
-            title={editingSize ? 'Edit Size' : 'Create Size'}
+            title={editingSize ? 'Редактировать размер' : 'Создать размер'}
           />
         </DialogContent>
       </Dialog>

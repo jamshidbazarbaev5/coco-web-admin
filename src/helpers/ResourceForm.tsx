@@ -42,7 +42,7 @@ export function ResourceForm<T>({
   title,
   hideSubmitButton = false,
 }: ResourceFormProps<T>) {
-  // Dynamically create Zod schema based on fields
+  // Динамически создаем схему Zod на основе полей
   const formSchema = z.object(
     fields.reduce((acc, field) => {
       let schema: z.ZodTypeAny;
@@ -57,11 +57,11 @@ export function ResourceForm<T>({
       
       if (field.required) {
         if (field.type === 'number') {
-          schema = (schema as z.ZodNumber).min(1, `${field.label} is required`);
+          schema = (schema as z.ZodNumber).min(1, `${field.label} обязательно для заполнения`);
         } else if (field.type === 'file') {
-          // For files, we keep it optional but can add validation if needed
+          // Для файлов оставляем опциональным, но можем добавить валидацию при необходимости
         } else {
-          schema = (schema as z.ZodString).min(1, `${field.label} is required`);
+          schema = (schema as z.ZodString).min(1, `${field.label} обязательно для заполнения`);
         }
       } else {
         schema = schema.optional();
@@ -153,7 +153,7 @@ export function ResourceForm<T>({
           
           {!hideSubmitButton && (
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Submitting...' : 'Submit'}
+              {isSubmitting ? 'Отправка...' : 'Отправить'}
             </Button>
           )}
         </form>

@@ -43,6 +43,15 @@ export interface Product extends Omit<ProductFormData, 'product_attributes'> {
   color_name_ru: string;
   updated_at?: string;
   on_sale?: boolean;
+  next?: string;
+}
+
+// Add this interface for the API response
+export interface ProductsResponse {
+  results: Product[];
+  count: number;
+  next: string | null;
+  previous: string | null;
 }
 
 const PRODUCT_URL = 'products/crud/product/';
@@ -53,7 +62,7 @@ export const {
   useCreateResource: useCreateProduct,
   useUpdateResource: useUpdateProduct,
   useDeleteResource: useDeleteProduct
-} = createResourceApiHooks<Product>(PRODUCT_URL, 'products');
+} = createResourceApiHooks<Product, ProductsResponse>(PRODUCT_URL, 'products');
 
 export const createProductFormData = (productData: ProductFormData): FormData => {
   const formData = new FormData();
