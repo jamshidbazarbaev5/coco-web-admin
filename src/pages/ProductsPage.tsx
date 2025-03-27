@@ -53,18 +53,48 @@ export function ProductsPage() {
         )
       ),
     },
-   
     {
       header: 'Название (РУ)',
       accessorKey: 'title_ru',
     },
     {
       header: 'Цена',
-      accessorKey: (product: Product) => `${formatPrice(product.price)}`,
+      accessorKey: 'product_attributes',
+      cell: (product: Product) => (
+        <div className="space-y-1">
+          {product.product_attributes.map((attr, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <div 
+                className="w-3 h-3 rounded-full" 
+                style={{ backgroundColor: attr.color_code }}
+              />
+              <span>{formatPrice(attr.price)}</span>
+              {attr.new_price && (
+                <span className="text-green-600">
+                  → {formatPrice(attr.new_price)}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      ),
     },
     {
       header: 'Количество',
-      accessorKey: 'quantity',
+      accessorKey: 'product_attributes',
+      cell: (product: Product) => (
+        <div className="space-y-1">
+          {product.product_attributes.map((attr, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <div 
+                className="w-3 h-3 rounded-full" 
+                style={{ backgroundColor: attr.color_code }}
+              />
+              <span>{attr.quantity}</span>
+            </div>
+          ))}
+        </div>
+      ),
     },
     {
       header: 'Варианты',
@@ -78,7 +108,6 @@ export function ProductsPage() {
                 style={{ backgroundColor: attr.color_code }}
               />
               {attr.color_name_uz}
-              {/* {attr.sizes.length > 0 ? `  ${attr.sizes.join(', ')}` : ''} */}
             </Badge>
           ))}
         </div>

@@ -35,9 +35,6 @@ const productSchema = z.object({
   description_uz: z.string().min(1, 'Описание (UZ) обязательно'),
   description_ru: z.string().min(1, 'Описание (RU) обязательно'),
   material: z.coerce.number().min(1, 'Материал обязателен'),
-  price: z.coerce.number().min(0, 'Цена должна быть положительной'),
-  quantity: z.coerce.number().min(0, 'Количество должно быть положительным'),
-  new_price: z.coerce.number().min(0).optional(),
   product_attributes: z.array(z.object({
     color_code: z.string().min(1, 'Код цвета обязателен'),
     color_name_uz: z.string().min(1, 'Название цвета (UZ) обязательно'),
@@ -47,6 +44,9 @@ const productSchema = z.object({
       z.string()
     ]),
     sizes: z.array(z.coerce.number()).min(1, 'Выберите хотя бы один размер'),
+    price: z.coerce.number().min(0, 'Цена должна быть положительной'),
+    new_price: z.coerce.number().min(0).optional(),
+    quantity: z.coerce.number().min(0, 'Количество должно быть положительным'),
   })).min(1, 'Добавьте хотя бы один атрибут продукта'),
 });
 
@@ -74,15 +74,15 @@ export function ProductForm({
       description_uz: '',
       description_ru: '',
       material: 0,
-      price: 0,
-      quantity: 0,
-      new_price: 0,
       product_attributes: [{
         color_code: '#000000',
         color_name_uz: '',
         color_name_ru: '',
         image: new File([], 'placeholder.jpg'),
-        sizes: []
+        sizes: [],
+        price: 0,
+        new_price: 0,
+        quantity: 0
       }],
       ...defaultValues
     },
@@ -111,7 +111,10 @@ export function ProductForm({
           color_name_uz: attr.color_name_uz,
           color_name_ru: attr.color_name_ru,
           image: typeof attr.image === 'string' ? new File([], attr.image) : attr.image,
-          sizes: attr.sizes
+          sizes: attr.sizes,
+          price: attr.price,
+          new_price: attr.new_price,
+          quantity: attr.quantity
         }))
       };
       
@@ -216,37 +219,6 @@ export function ProductForm({
               )}
             />
           </div>
-
-          {/* Product Details */}
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="price"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Цена</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="quantity"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Количество</FormLabel>
-                  <FormControl>
-                    <Input type="number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
         </div>
 
         {/* Translations */}
@@ -312,28 +284,6 @@ export function ProductForm({
           </div>
         </div>
 
-        {/* Add new price field after price */}
-        <div className="space-y-4">
-          <FormField
-            control={form.control}
-            name="new_price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Новая цена (Цена со скидкой)</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="Если добавите новую цену, то это будет распродажа" 
-                    {...field} 
-                    value={field.value || ''} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
         {/* Product Attributes */}
         <div className="space-y-6">
           <div className="flex justify-between items-center border-b pb-4">
@@ -345,7 +295,10 @@ export function ProductForm({
                 color_name_uz: '',
                 color_name_ru: '',
                 image: new File([], 'placeholder.jpg'),
-                sizes: []
+                sizes: [],
+                price: 0,
+                new_price: 0,
+                quantity: 0
               })}
               variant="outline"
             >
@@ -414,6 +367,56 @@ export function ProductForm({
                         <FormLabel>Название цвета (RU)</FormLabel>
                         <FormControl>
                           <Input {...colorNameRuField} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Price, New Price, and Quantity Section */}
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name={`product_attributes.${index}.price`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Цена</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name={`product_attributes.${index}.new_price`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Новая цена</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            placeholder="Цена со скидкой" 
+                            {...field}
+                            value={field.value || ''} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name={`product_attributes.${index}.quantity`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Количество</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

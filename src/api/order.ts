@@ -1,25 +1,21 @@
 import { createResourceApiHooks } from '../hooks/createResourceApiHooks';
 
 interface OrderItem {
-  product: number;
+  product_variant: number;  // Changed from product
+  size: number;
   quantity: number;
-  subtotal?: number;
-  total_sum?: number;
-  created_at?: string;
-  status?: string;
+  subtotal: string;  // Changed to string to match API response
 }
 
 export interface Order {
-  id?: number;
-  subtotal?: number;
-  total_sum?: number;
-  created_at?: string;
-  status?: string;
-
+  id: number;
   customer_name: string;
   customer_phone: string;
   customer_preferences: string;
   order_items: OrderItem[];
+  total_sum: string;  // Changed to string to match API response
+  status: string;
+  created_at: string;
 }
 
 export const {

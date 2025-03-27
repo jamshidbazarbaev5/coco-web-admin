@@ -131,16 +131,16 @@ export function CreateProduct() {
           description_uz: '',
           description_ru: '',
           material: 0,
-          price: 0,
-          quantity: 0,
-          new_price: 0,
           product_attributes: [{
             id: 0,
             color_code: '#000000',
             color_name_uz: '',
             color_name_ru: '',
             image: new File([], 'placeholder.jpg'),
-            sizes: []
+            sizes: [],
+            price: 0,
+            new_price: 0,
+            quantity: 0
           }]
         }}
       />

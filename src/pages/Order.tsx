@@ -1,4 +1,4 @@
-import { useGetOrders, useDeleteOrder, type Order } from '../api/order';
+import { useGetOrders, useDeleteOrder } from '../api/order';
 import { useGetProducts, type Product } from '../api/products';
 import { ResourceTable } from '../helpers/ResourceTable';
 import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
@@ -8,12 +8,31 @@ import { useUpdateOrder } from '../api/order';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Button } from '../components/ui/button';
 
+// Update the Order interface to match new structure
+interface OrderItem {
+  product_variant: number;
+  size: number;
+  quantity: number;
+  subtotal: string;  // API returns subtotal as string
+}
+
+interface Order {
+  id: number;
+  customer_name: string;
+  customer_phone: string;
+  customer_preferences: string;
+  order_items: OrderItem[];
+  total_sum: string;  // API returns total_sum as string
+  status: string;
+  created_at: string;
+}
+
 export function Orders() {
   const [page, setPage] = useState(1);
   const [productPage, setProductPage] = useState(1);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
-  const [, setSelectedProducts] = useState<Array<{product: Product | null, quantity: number, subtotal?: number}>>([]);
+  const [, setSelectedProducts] = useState<Array<{product: Product | null, quantity: number, subtotal: string}>>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [newStatus, setNewStatus] = useState<string>('');
   const { mutate: updateOrder } = useUpdateOrder();
@@ -32,11 +51,10 @@ export function Orders() {
   ];
 
   useEffect(() => {
-    // Reset state when component mounts
     setAllProducts([]);
     setProductPage(1);
     refetchProducts();
-  }, []); // Only run once on mount
+  }, []);
 
   useEffect(() => {
     if (productsData?.results) {
@@ -87,26 +105,51 @@ export function Orders() {
     {
       header: 'Имя клиента',
       accessorKey: 'customer_name',
+      cell: (row: Order) => (
+        <div className="truncate max-w-[150px]" title={row.customer_name}>
+          {row.customer_name}
+        </div>
+      ),
     },
     {
       header: 'Телефон',
       accessorKey: 'customer_phone',
+      cell: (row: Order) => (
+        <div className="truncate max-w-[120px]" title={row.customer_phone}>
+          {row.customer_phone}
+        </div>
+      ),
     },
     {
       header: 'Предпочтения',
       accessorKey: 'customer_preferences',
+      cell: (row: Order) => (
+        <div className="truncate max-w-[200px]" title={row.customer_preferences}>
+          {row.customer_preferences}
+        </div>
+      ),
     },
     {
       header: 'Статус',
       accessorKey: 'status',
+      cell: (row: Order) => (
+        <div className="truncate max-w-[150px]" title={row.status}>
+          {row.status}
+        </div>
+      ),
     },
     {
       header: 'Дата создания',
       accessorKey: 'created_at',
       cell: (row: Order) => {
-        return row.created_at 
+        const formattedDate = row.created_at 
           ? new Date(row.created_at).toLocaleDateString()
           : '-';
+        return (
+          <div className="truncate max-w-[100px]" title={formattedDate}>
+            {formattedDate}
+          </div>
+        );
       },
     },
     {
@@ -120,23 +163,32 @@ export function Orders() {
         }
 
         return (
-          <div className="max-w-xs">
-            {orderItems.map((item: any, index: number) => {
-              const product = allProducts.find((p: Product) => p.id === item.product);
+          <div className="max-w-[250px]">
+            {orderItems.map((item: OrderItem, index: number) => {
+              const product = allProducts.find((p: Product) => {
+                return p.product_attributes.some(attr => attr.id === item.product_variant);
+              });
+              const productAttribute = product?.product_attributes?.find(
+                attr => attr.id === item.product_variant
+              );
+              
+              const content = `${product 
+                ? `${product.title_ru} (${productAttribute?.color_name_ru || 'Цвет не указан'})` 
+                : `Вариант не найден (ID: ${item.product_variant})`}, Кол-во: ${item.quantity}`;
+              
               return (
                 <div key={index} className="text-sm">
-                  <span>
-                    {product 
-                      ? `${product.title_ru}` 
-                      : `Продукт не найден (ID: ${item.product})`}, 
-                    Кол-во: {item.quantity}
-                  </span>
-                  {item.subtotal && <span> ({formatPrice(item.subtotal)})</span>}
+                  <div className="truncate" title={content}>
+                    <span>{content}</span>
+                    {item.subtotal && <span> ({formatPrice(item.subtotal)})</span>}
+                  </div>
                 </div>
               );
             })}
             {row.total_sum && (
-              <div className="font-semibold mt-1">Итого: {formatPrice(row.total_sum)}</div>
+              <div className="font-semibold mt-1 truncate" title={`Итого: ${formatPrice(row.total_sum)}`}>
+                Итого: {formatPrice(row.total_sum)}
+              </div>
             )}
           </div>
         );
@@ -161,20 +213,20 @@ export function Orders() {
 
   useEffect(() => {
     if (editingOrder && allProducts.length > 0) {
-        setSelectedProducts(
-        editingOrder.order_items?.map(item => {
-          const product = allProducts.find((p: Product) => p.id === item.product) || null;
-          return {
-            product,
-            quantity: item.quantity,
-            subtotal: item.subtotal
-          };
-        }) || []
+      setSelectedProducts(
+        editingOrder.order_items?.map(item => ({
+          product: allProducts.find((p: Product) => 
+            p.product_attributes.some(attr => attr.id === item.product_variant)
+          ) || null,
+          quantity: item.quantity,
+          subtotal: item.subtotal  // This is now a string
+        })) || []
       );
     } else {
       setSelectedProducts([]);
     }
   }, [editingOrder, allProducts]);
+
   const formatPrice = (price: any) => {
     // Convert price to string if it's a number
     const priceStr = typeof price === 'number' ? price.toString() : price;
@@ -191,41 +243,37 @@ export function Orders() {
     return `${formattedPrice} uzs`;
   }
 
-
   const handleSaveStatus = () => {
     if (!editingOrder || !newStatus) return;
 
-    const updateData = {
+    const updateData: Order = {
       id: editingOrder.id,
       customer_name: editingOrder.customer_name,
       customer_phone: editingOrder.customer_phone,
       customer_preferences: editingOrder.customer_preferences,
       order_items: editingOrder.order_items.map(item => ({
-        product: item.product,
+        product_variant: item.product_variant,
+        size: item.size,
         quantity: item.quantity,
         subtotal: item.subtotal
       })),
       status: newStatus,
-      total_sum: editingOrder.total_sum
+      total_sum: editingOrder.total_sum,
+      created_at: editingOrder.created_at
     };
 
-    console.log('Sending update data:', updateData); // For debugging
-
-    updateOrder(
-      updateData,
-      {
-        onSuccess: () => {
-          toast.success('Статус успешно обновлен');
-          refetch();
-          setIsFormOpen(false);
-        },
-        onError: (error: Error) => {
-          toast.error('Ошибка при обновлении статуса', {
-            description: error.message,
-          });
-        },
-      }
-    );
+    updateOrder(updateData, {
+      onSuccess: () => {
+        toast.success('Статус успешно обновлен');
+        refetch();
+        setIsFormOpen(false);
+      },
+      onError: (error: Error) => {
+        toast.error('Ошибка при обновлении статуса', {
+          description: error.message,
+        });
+      },
+    });
   };
 
   console.log(data);
@@ -233,7 +281,7 @@ export function Orders() {
   return (
     <div className="container mx-auto py-6">
       <ResourceTable
-        data={data?.results ?? []}
+        data={(data?.results ?? []) as Order[]}  // Type assertion to ensure compatibility
         columns={columns}
         isLoading={isLoading}
         onEdit={(order) => {
@@ -294,12 +342,29 @@ export function Orders() {
                 <h3 className="font-medium mb-2">Позиции заказа:</h3>
                 <div className="space-y-3">
                   {editingOrder.order_items?.map((item, index) => {
-                    const product = allProducts.find(p => p.id === item.product);
+                    const product = allProducts.find(p => 
+                      p.product_attributes.some(attr => attr.id === item.product_variant)
+                    );
+                    const productAttribute = product?.product_attributes?.find(
+                      attr => attr.id === item.product_variant
+                    );
+                    
                     return (
                       <div key={index} className="bg-gray-50 p-3 rounded">
                         <div>
-                          <strong>Продукт:</strong> {product?.title_ru || `Продукт ${item.product}`}
+                          <strong>Продукт:</strong> {product?.title_ru || `Вариант ${item.product_variant}`}
                         </div>
+                        <div>
+                          <strong>Вариант:</strong> {productAttribute?.color_name_ru || 'Цвет не указан'}
+                        </div>
+                        <div>
+                          <strong>Цена:</strong> {formatPrice(productAttribute?.price || 0)}
+                        </div>
+                        {productAttribute?.new_price && (
+                          <div>
+                            <strong>Цена со скидкой:</strong> {formatPrice(productAttribute.new_price)}
+                          </div>
+                        )}
                         <div>
                           <strong>Количество:</strong> {item.quantity}
                         </div>

@@ -86,10 +86,7 @@ export function EditProduct() {
         title_uz: product.title_uz,
         title_ru: product.title_ru,
         description_uz: product.description_uz,
-        description_ru: product.description_ru,
-        price: product.price,
-        new_price: product.new_price || '',
-        quantity: product.quantity
+        description_ru: product.description_ru
       });
       
       if (product.product_attributes && product.product_attributes.length > 0) {
@@ -101,6 +98,9 @@ export function EditProduct() {
             color_name_ru: attr.color_name_ru || '',
             image: attr.image,
             sizes: attr.sizes,
+            price: attr.price || 0,
+            new_price: attr.new_price || '',
+            quantity: attr.quantity || 0,
             newImage: null
           }))
         );
@@ -110,6 +110,9 @@ export function EditProduct() {
           color_name_uz: '',
           color_name_ru: '',
           sizes: [],
+          price: 0,
+          new_price: '',
+          quantity: 0,
           newImage: null
         }]);
       }
@@ -174,11 +177,6 @@ export function EditProduct() {
       submitFormData.append('description_uz', formData.description_uz);
       submitFormData.append('description_ru', formData.description_ru);
       submitFormData.append('material', formData.material.toString());
-      submitFormData.append('price', formData.price.toString());
-      submitFormData.append('quantity', formData.quantity.toString());
-      if (formData.new_price) {
-        submitFormData.append('new_price', formData.new_price.toString());
-      }
 
       // Add deleted attributes to form data
       deletedAttributes.forEach((id, index) => {
@@ -187,7 +185,6 @@ export function EditProduct() {
 
       // Product attributes
       await Promise.all(productAttributes.map(async (attr, index) => {
-        // Include ID for existing attributes
         if (attr.id) {
           submitFormData.append(`product_attributes[${index}]id`, attr.id.toString());
         }
@@ -195,6 +192,12 @@ export function EditProduct() {
         submitFormData.append(`product_attributes[${index}]color_code`, attr.color_code || '#000000');
         submitFormData.append(`product_attributes[${index}]color_name_uz`, attr.color_name_uz || '');
         submitFormData.append(`product_attributes[${index}]color_name_ru`, attr.color_name_ru || '');
+        submitFormData.append(`product_attributes[${index}]price`, attr.price.toString());
+        submitFormData.append(`product_attributes[${index}]quantity`, attr.quantity.toString());
+        
+        if (attr.new_price) {
+          submitFormData.append(`product_attributes[${index}]new_price`, attr.new_price.toString());
+        }
         
         if (attr.newImage instanceof File) {
           submitFormData.append(`product_attributes[${index}]image`, attr.newImage);
@@ -383,42 +386,6 @@ export function EditProduct() {
                     />
                   </div>
                 </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="price">Цена</Label>
-                    <Input 
-                      id="price" 
-                      name="price" 
-                      type="number" 
-                      value={formData.price || ''} 
-                      onChange={handleInputChange} 
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="new_price">Цена со скидкой</Label>
-                    <Input 
-                      id="new_price" 
-                      name="new_price" 
-                      type="number" 
-                      value={formData.new_price || ''} 
-                      onChange={handleInputChange} 
-                      placeholder="Оставьте пустым, если нет скидки"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="quantity">Количество</Label>
-                    <Input 
-                      id="quantity" 
-                      name="quantity" 
-                      type="number" 
-                      value={formData.quantity || ''} 
-                      onChange={handleInputChange} 
-                    />
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -546,6 +513,39 @@ export function EditProduct() {
                           }}
                         />
                       </div>
+                      
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor={`price-${index}`}>Цена</Label>
+                          <Input
+                            id={`price-${index}`}
+                            type="number"
+                            value={attr.price || ''}
+                            onChange={(e) => handleAttributeChange(index, 'price', e.target.value)}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor={`new-price-${index}`}>Цена со скидкой</Label>
+                          <Input
+                            id={`new-price-${index}`}
+                            type="number"
+                            value={attr.new_price || ''}
+                            onChange={(e) => handleAttributeChange(index, 'new_price', e.target.value)}
+                            placeholder="Оставьте пустым, если нет скидки"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor={`quantity-${index}`}>Количество</Label>
+                          <Input
+                            id={`quantity-${index}`}
+                            type="number"
+                            value={attr.quantity || ''}
+                            onChange={(e) => handleAttributeChange(index, 'quantity', e.target.value)}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -578,4 +578,4 @@ export function EditProduct() {
       </form>
     </div>
   );
-}   
+}
