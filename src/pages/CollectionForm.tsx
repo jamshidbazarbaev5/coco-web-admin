@@ -43,16 +43,37 @@ export default function CollectionPage() {
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [products, setProducts] = useState<Product[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
 
   const { data, isLoading, refetch } = useGetCollections({ params: { page: currentPage } });
   const { mutate: createCollection, isPending: isCreating } = useCreateCollection();
   const { mutate: updateCollection, isPending: isUpdating } = useUpdateCollection();
   const { mutate: deleteCollection } = useDeleteCollection();
 
+  // Updated function to fetch all products
+  const fetchAllProducts = async () => {
+    setIsLoadingProducts(true);
+    try {
+      let allProducts: Product[] = [];
+      let nextUrl: string | null = 'https://coco20.uz/api/v1/products/crud/product/';
+
+      while (nextUrl) {
+        const response = await fetch(nextUrl);
+        const data = await response.json();
+        allProducts = [...allProducts, ...data.results];
+        nextUrl = data.next;
+      }
+
+      setProducts(allProducts);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
+      setIsLoadingProducts(false);
+    }
+  };
+
   useEffect(() => {
-    fetch('https://coco20.uz/api/v1/products/crud/product/')
-      .then(res => res.json())
-      .then(data => setProducts(data.results));
+    fetchAllProducts();
   }, []);
 
 
@@ -64,10 +85,12 @@ export default function CollectionPage() {
       label: 'Продукт',
       type: 'select',
       required: true,
-      options: products.map(p => ({
-        value: p.id.toString(),
-        label: `${p.id} - ${p.title_uz}`,
-      })),
+      options: isLoadingProducts 
+        ? [{ value: '', label: 'Загрузка продуктов...' }]
+        : products.map(p => ({
+            value: p.id.toString(),
+            label: `${p.id} - ${p.title_uz}`,
+          })),
     },
     {
       name: 'title_uz',
