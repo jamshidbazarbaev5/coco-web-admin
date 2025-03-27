@@ -18,22 +18,22 @@ export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
   
   const navItems = [
-    { icon: ShoppingBag, label: 'Collections', href: '/collections' },
-    { icon: Tags, label: 'Categories', href: '/categories' },
-    { icon: Box, label: 'Materials', href: '/materials' },
-    { icon: ShoppingBag, label: 'Brands', href: '/brands' },
-    { icon: BarChart3, label: 'Sizes', href: '/sizes' },
-    { icon: User, label: 'Contact Details', href: '/details' },
-    { icon: Mail, label: 'Feedback', href: '/feedback' },
-    { icon: ShoppingBag, label: 'Orders', href: '/orders' },
-    { icon: ShoppingBag, label: 'Products', href: '/products' }
+    { icon: ShoppingBag, label: 'Коллекции', href: '/collections' },
+    { icon: Tags, label: 'Категории', href: '/categories' },
+    { icon: Box, label: 'Материалы', href: '/materials' },
+    { icon: ShoppingBag, label: 'Бренды', href: '/brands' },
+    { icon: BarChart3, label: 'Размеры', href: '/sizes' },
+    { icon: User, label: 'Контактные данные', href: '/details' },
+    { icon: Mail, label: 'Обратная связь', href: '/feedback' },
+    { icon: ShoppingBag, label: 'Заказы', href: '/orders' },
+    { icon: ShoppingBag, label: 'Товары', href: '/products' }
   ];
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
+      {/* Боковая панель */}
       <aside className="w-64 bg-white shadow-lg">
-        {/* Logo */}
+        {/* Логотип */}
         <div className="px-6 py-6 border-b">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
@@ -45,7 +45,7 @@ export default function Layout({ children }: LayoutProps) {
           </div>
         </div>
 
-        {/* Navigation */}
+        {/* Навигация */}
         <nav className="px-3 py-4">
           {navItems.map((item, index) => (
             <a
@@ -82,9 +82,9 @@ export default function Layout({ children }: LayoutProps) {
         </nav>
       </aside>
 
-      {/* Main Content */}
+      {/* Основной контент */}
       <main className="flex-1 p-8">
-        {/* Replace the hardcoded content with the children prop */}
+        {/* Заменить жестко закодированный контент дочерним компонентом */}
         {children}
       </main>
     </div>
