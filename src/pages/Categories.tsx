@@ -1,9 +1,17 @@
 import { ResourceTable } from '../helpers/ResourceTable';
 import { ResourceForm } from '../helpers/ResourceForm';
-import { Category, useGetCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '../api/category';
+import { useGetCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '../api/category';
 import { Dialog, DialogContent, DialogTrigger } from '../components/ui/dialog';
 import { useState } from 'react';
 import { toast } from 'sonner';
+
+// Define the Category type explicitly
+interface Category {
+  id?: number;
+  name_ru: string;
+  name_uz: string;
+  image?: string | File;
+}
 
 export function CategoryPage() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
@@ -43,26 +51,27 @@ export function CategoryPage() {
     { header: 'Название (УЗ)', accessorKey: 'name_uz' },
   ];
 
-  const formFields = [
+  const formFields: any = [
     {
       name: 'name_ru',
       label: 'Название (Русский)',
-      type: 'text' as const,
+      type: 'text',
       placeholder: 'Введите название категории на русском',
       required: true,
     },
     {
       name: 'name_uz',
       label: 'Название (Узбекский)',
-      type: 'text' as const,
+      type: 'text',
       placeholder: 'Введите название категории на узбекском',
       required: true,
     },
     {
       name: 'image',
       label: 'Изображение',
-      type: 'file' as const,
-      required: !selectedCategory, // Обязательно только для новых категорий
+      type: 'file',
+      required: !selectedCategory,
+      imageUrl: selectedCategory?.image as string
     }
   ];
 
@@ -71,6 +80,7 @@ export function CategoryPage() {
     formData.append('name_ru', data.name_ru);
     formData.append('name_uz', data.name_uz);
     
+    // Only append image if a new file was selected
     if (data.image instanceof File) {
       formData.append('image', data.image);
     }
@@ -114,7 +124,7 @@ export function CategoryPage() {
       id: category.id,
       name_ru: category.name_ru,
       name_uz: category.name_uz,
-      ...(category.image && Object.keys(category.image).length > 0 ? { image: category.image } : {})
+      image: category.image // The image URL will be used for preview
     };
     setSelectedCategory(cleanCategory);
     setIsFormOpen(true);

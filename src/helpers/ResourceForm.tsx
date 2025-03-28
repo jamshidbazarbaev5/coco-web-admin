@@ -14,6 +14,8 @@ import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 
+
+// Update the FormField interface to be more specific about the field types
 export interface FormField {
   name: string;
   label: string;
@@ -23,9 +25,11 @@ export interface FormField {
   required?: boolean;
   validation?: (schema: z.ZodTypeAny) => z.ZodTypeAny;
   readOnly?: boolean;
+  imageUrl?: string;
 }
 
-interface ResourceFormProps<T> {
+// Update the ResourceFormProps interface to be more specific about generic type T
+interface ResourceFormProps<T extends Record<string, any>> {
   fields: FormField[];
   onSubmit: (data: T) => void;
   defaultValues?: Partial<T>;
@@ -34,7 +38,7 @@ interface ResourceFormProps<T> {
   hideSubmitButton?: boolean;
 }
 
-export function ResourceForm<T>({
+export function ResourceForm<T extends Record<string, any>>({
   fields,
   onSubmit,
   defaultValues = {},
@@ -42,7 +46,6 @@ export function ResourceForm<T>({
   title,
   hideSubmitButton = false,
 }: ResourceFormProps<T>) {
-  // Динамически создаем схему Zod на основе полей
   const formSchema = z.object(
     fields.reduce((acc, field) => {
       let schema: z.ZodTypeAny;
@@ -50,7 +53,12 @@ export function ResourceForm<T>({
       if (field.type === 'number') {
         schema = z.coerce.number();
       } else if (field.type === 'file') {
-        schema = z.instanceof(File).optional();
+        // Handle both File instances and string URLs
+        schema = z.union([
+          z.instanceof(File),
+          z.string(),
+          z.undefined()
+        ]);
       } else {
         schema = z.string();
       }
@@ -59,7 +67,12 @@ export function ResourceForm<T>({
         if (field.type === 'number') {
           schema = (schema as z.ZodNumber).min(1, `${field.label} обязательно для заполнения`);
         } else if (field.type === 'file') {
-          // Для файлов оставляем опциональным, но можем добавить валидацию при необходимости
+          schema = z.union([
+            z.instanceof(File),
+            z.string()
+          ]).refine(val => val !== undefined && val !== null, {
+            message: `${field.label} обязательно для заполнения`
+          });
         } else {
           schema = (schema as z.ZodString).min(1, `${field.label} обязательно для заполнения`);
         }
@@ -83,6 +96,8 @@ export function ResourceForm<T>({
   const handleSubmit = (data: any) => {
     onSubmit(data);
   };
+
+  const { setValue } = form;
 
   return (
     <div className="space-y-6">
@@ -126,15 +141,30 @@ export function ResourceForm<T>({
                         </SelectContent>
                       </Select>
                     ) : field.type === 'file' ? (
-                      <Input
-                        type="file"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            formField.onChange(file);
-                          }
-                        }}
-                      />
+                      <div className="space-y-2">
+                        <div className="space-y-4">
+                          {field.imageUrl && (
+                            <div className="w-24 h-24 relative rounded-lg overflow-hidden border">
+                              <img 
+                                src={field.imageUrl} 
+                                alt="Current image" 
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          )}
+                          <Input
+                            type="file"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                setValue(field.name, file);
+                              }
+                            }}
+                            required={field.required && !field.imageUrl}
+                            accept="image/*"
+                          />
+                        </div>
+                      </div>
                     ) : (
                       <Input
                         type={field.type}
