@@ -5,7 +5,7 @@ export interface ProductAttribute {
   color_name_uz: string;
   color_name_ru: string;
   image: File;
-  sizes: number[];
+  sizes: number[];  // Updated to match the new structure
   price: number;
   new_price?: number;
   quantity: number;

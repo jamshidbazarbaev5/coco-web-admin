@@ -32,10 +32,17 @@ export function SizesPage() {
   // Form fields definition
   const sizeFields: FormField[] = [
     {
-      name: 'name',
-      label: 'Название размера',
+      name: 'name_ru',
+      label: 'Название (Русский)',
       type: 'text',
-      placeholder: 'Введите название размера (например, Маленький, Средний, Большой)',
+      placeholder: 'Введите название размера на русском',
+      required: true,
+    },
+    {
+      name: 'name_uz',
+      label: 'Название (Узбекский)',
+      type: 'text',
+      placeholder: 'Введите название размера на узбекском',
       required: true,
     },
   ];
@@ -47,15 +54,19 @@ export function SizesPage() {
       accessorKey: 'displayId',
     },
     {
-      header: 'Название',
-      accessorKey: 'name',
+      header: 'Название (Русский)',
+      accessorKey: 'name_ru',
+    },
+    {
+      header: 'Название (Узбекский)',
+      accessorKey: 'name_uz',
     },
   ];
 
   const handleSubmit = (data: Partial<Size>) => {
     if (editingSize) {
       updateSize(
-        { id: editingSize.id, name: data.name! } as Size,
+        { id: editingSize.id!, ...data } as Size,
         {
           onSuccess: () => {
             toast.success('Размер успешно обновлен');

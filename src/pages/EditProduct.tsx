@@ -63,10 +63,36 @@ export function EditProduct() {
           fetchAllPages('/products/crud/size/')
         ]);
         
-        setAllBrands(brands);
-        setAllCategories(categories);
-        setAllMaterials(materials);
-        setAllSizes(sizes);
+        // Transform the fetched data to match the expected structure
+        const transformedBrands = brands.map(brand => ({
+          id: brand.id,
+          name_uz: brand.name || brand.name_uz,
+          name_ru: brand.name || brand.name_ru
+        }));
+        
+        const transformedCategories = categories.map(category => ({
+          id: category.id,
+          name_uz: category.name || category.name_uz,
+          name_ru: category.name || category.name_ru
+        }));
+        
+        const transformedMaterials = materials.map(material => ({
+          id: material.id,
+          name_uz: material.name || material.name_uz,
+          name_ru: material.name || material.name_ru
+        }));
+        
+        // Transform sizes to match the new structure
+        const transformedSizes = sizes.map(size => ({
+          id: size.id,
+          name_uz: size.name_uz,
+          name_ru: size.name_ru
+        }));
+        
+        setAllBrands(transformedBrands);
+        setAllCategories(transformedCategories);
+        setAllMaterials(transformedMaterials);
+        setAllSizes(transformedSizes);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -285,7 +311,7 @@ export function EditProduct() {
                       <SelectContent>
                         {allBrands.map((brand) => (
                           <SelectItem key={brand.id} value={brand.id.toString()}>
-                            {brand.name || brand.name_uz}
+                            {brand.name_uz}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -304,7 +330,7 @@ export function EditProduct() {
                       <SelectContent>
                         {allCategories.map((category) => (
                           <SelectItem key={category.id} value={category.id.toString()}>
-                            {category.name || category.name_uz}
+                            {category.name_uz}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -323,7 +349,7 @@ export function EditProduct() {
                       <SelectContent>
                         {allMaterials.map((material) => (
                           <SelectItem key={material.id} value={material.id.toString()}>
-                            {material.name || material.name_uz}
+                            {material.name_uz}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -480,7 +506,7 @@ export function EditProduct() {
                                 className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                               />
                               <label htmlFor={`size-${index}-${size.id}`} className="text-sm font-medium">
-                                {size.name || size.name_uz}
+                                {size.name_uz}
                               </label>
                             </div>
                           ))}

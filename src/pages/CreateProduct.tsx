@@ -81,8 +81,8 @@ export function CreateProduct() {
         
         const transformedSizes = sizes.map(size => ({
           id: size.id,
-          name_uz: size.name,
-          name_ru: size.name
+          name_uz: size.name_uz,
+          name_ru: size.name_ru
         }));
         
         // Set the transformed data

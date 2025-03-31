@@ -3,7 +3,8 @@ import { createResourceApiHooks } from '../hooks/createResourceApiHooks';
 // Types
 export interface Size {
   id?: number;
-  name: string;
+  name_uz: string;
+  name_ru: string;
 }
 
 // API endpoints
