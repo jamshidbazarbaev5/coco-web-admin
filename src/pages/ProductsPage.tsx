@@ -3,9 +3,11 @@ import { useGetProducts, useDeleteProduct, Product } from '../api/products';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '../components/ui/badge';
 import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 
 export function ProductsPage() {
   const [page, setPage] = useState(1);
+  const [error, setError] = useState<string | null>(null);
   const { data: productsData = { count: 0, results: [], next: null, previous: null }, isLoading } = useGetProducts({
     params: { page }
   });
@@ -121,7 +123,11 @@ export function ProductsPage() {
 
   const handleDelete = async (id: number) => {
     if (window.confirm('Вы уверены, что хотите удалить этот товар?')) {
-      await deleteProduct.mutateAsync(id);
+      try {
+        await deleteProduct.mutateAsync(id);
+      } catch (err: any) {
+        setError(err?.response?.data?.message || 'Произошла ошибка при удалении товара');
+      }
     }
   };
 
@@ -143,6 +149,15 @@ export function ProductsPage() {
         currentPage={page}
         onPageChange={(newPage) => setPage(newPage)}
       />
+
+      <Dialog open={!!error} onOpenChange={() => setError(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ошибка</DialogTitle>
+            <DialogDescription>{error}</DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

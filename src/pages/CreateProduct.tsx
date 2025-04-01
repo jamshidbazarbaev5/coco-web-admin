@@ -3,10 +3,12 @@ import { ProductForm } from '../helpers/ProductForm';
 import { useCreateProduct, createProductFormData } from '../api/products';
 import api from '../api/api';
 import { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 
 export function CreateProduct() {
   const navigate = useNavigate();
   const createProduct = useCreateProduct();
+  const [error, setError] = useState<string | null>(null);
 
   type PaginatedResponse<T> = {
     count: number;
@@ -114,8 +116,8 @@ export function CreateProduct() {
             const formData = createProductFormData(data);
             await createProduct.mutateAsync(formData as any);
             navigate('/products');
-          } catch (error) {
-            console.error('Failed to create product:', error);
+          } catch (error: any) {
+            setError(error?.response?.data?.message || 'Произошла ошибка при создании товара');
           }
         }}
         isSubmitting={createProduct.isPending}
@@ -144,6 +146,15 @@ export function CreateProduct() {
           }]
         }}
       />
+
+      <Dialog open={!!error} onOpenChange={() => setError(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ошибка</DialogTitle>
+            <DialogDescription>{error}</DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

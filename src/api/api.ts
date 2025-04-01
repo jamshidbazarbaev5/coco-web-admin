@@ -1,8 +1,15 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
-import { refreshToken, } from './auth';
+import { refreshToken } from './auth';
+import { useErrorStore } from '../store/errorStore';
+
+interface ApiErrorResponse {
+  detail?: string;
+  message?: string;
+  error?: string;
+}
 
 // Constants
-const BASE_URL =  'https://coco20.uz/api/v1';
+const BASE_URL = 'https://coco20.uz/api/v1';
 
 // Create API instance
 const api: AxiosInstance = axios.create({
@@ -38,7 +45,7 @@ api.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
   },
-  async (error: AxiosError) => {
+  async (error: AxiosError<ApiErrorResponse>) => {
     const originalRequest = error.config;
     
     // If error is 401 and not a retry
@@ -46,22 +53,32 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       
       try {
-        // Try to refresh the token
         const newToken = await refreshToken();
-        
-        // Update the authorization header
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
         }
-        
-        // Retry the original request
         return api(originalRequest);
       } catch (refreshError) {
-        // If refresh fails, redirect to login
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }
     }
+
+    // Extract error message from response
+    let errorMessage = 'Произошла ошибка';
+    if (error.response?.data) {
+      if (typeof error.response.data === 'string') {
+        errorMessage = error.response.data;
+      } else {
+        errorMessage = error.response.data.detail || 
+                      error.response.data.message || 
+                      error.response.data.error || 
+                      errorMessage;
+      }
+    }
+
+    // Show error in modal
+    useErrorStore.getState().setError(errorMessage);
     
     return Promise.reject(error);
   }

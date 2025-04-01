@@ -16,36 +16,41 @@ import { EditProduct } from "./pages/EditProduct";
 import { Orders } from "./pages/Order";
 import { ProductsPage } from "./pages/ProductsPage";
 import CollectionForm from "./pages/CollectionForm";
+import { Toaster } from 'sonner';
+import { ErrorDialog } from './components/ui/error-dialog';
+
 const queryClient = new QueryClient()
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        
-        {/* Protected routes */}
-        <Route element={
-          <PrivateRoute>
-            <Layout>
-              <Outlet />
-            </Layout>
-          </PrivateRoute>
-        }>
-          <Route path="/" element={<Navigate to="/feedback" replace />} />
-          <Route path="/feedback" element={<Feedback />} />
-          <Route path="/sizes" element={<SizesPage />} />
-          <Route path="/brands" element={<BrandsPage />} />
-          <Route path="/categories" element={<CategoryPage />} />
-          <Route path="/materials" element={<MaterialsPage />} />
-          <Route path="/details" element={<ContactDetailsPage />} />
-          <Route path="/create-product" element={<CreateProduct />} />
-          <Route path="/edit-product/:id" element={<EditProduct />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/collections" element={<CollectionForm />} />
-          <Route path="/products" element={<ProductsPage />} />
-        </Route>
-      </Routes>
+        <Toaster position="top-right" />
+        <ErrorDialog />
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          
+          {/* Protected routes */}
+          <Route element={
+            <PrivateRoute>
+              <Layout>
+                <Outlet />
+              </Layout>
+            </PrivateRoute>
+          }>
+            <Route path="/" element={<Navigate to="/feedback" replace />} />
+            <Route path="/feedback" element={<Feedback />} />
+            <Route path="/sizes" element={<SizesPage />} />
+            <Route path="/brands" element={<BrandsPage />} />
+            <Route path="/categories" element={<CategoryPage />} />
+            <Route path="/materials" element={<MaterialsPage />} />
+            <Route path="/details" element={<ContactDetailsPage />} />
+            <Route path="/create-product" element={<CreateProduct />} />
+            <Route path="/edit-product/:id" element={<EditProduct />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/collections" element={<CollectionForm />} />
+            <Route path="/products" element={<ProductsPage />} />
+          </Route>
+        </Routes>
     </QueryClientProvider>
   );
 }

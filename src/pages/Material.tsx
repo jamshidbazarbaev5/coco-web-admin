@@ -4,6 +4,7 @@ import { ResourceForm, FormField } from '../helpers/ResourceForm';
 import { Material, useGetMaterials, useCreateMaterial, useUpdateMaterial, useDeleteMaterial } from '../api/material';
 import { Dialog, DialogContent } from '../components/ui/dialog';
 import { Pagination } from '../components/ui/Pagination';
+import { toast } from 'sonner';
 
 export function MaterialsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -56,14 +57,24 @@ export function MaterialsPage() {
     if (editingMaterial) {
       updateMaterial({ id: editingMaterial.id!, ...data }, {
         onSuccess: () => {
+          toast.success('Материал успешно обновлен');
           setIsFormOpen(false);
           setEditingMaterial(null);
+        },
+        onError: (error) => {
+          console.error('Update error:', error);
+          toast.error('Не удалось обновить материал');
         },
       });
     } else {
       createMaterial(data, {
         onSuccess: () => {
+          toast.success('Материал успешно создан');
           setIsFormOpen(false);
+        },
+        onError: (error) => {
+          console.error('Create error:', error);
+          toast.error('Не удалось создать материал');
         },
       });
     }
@@ -76,7 +87,15 @@ export function MaterialsPage() {
 
   const handleDelete = (id: number) => {
     if (confirm('Вы уверены, что хотите удалить этот материал?')) {
-      deleteMaterial(id);
+      deleteMaterial(id, {
+        onSuccess: () => {
+          toast.success('Материал успешно удален');
+        },
+        onError: (error) => {
+          console.error('Delete error:', error);
+          toast.error('Не удалось удалить материал');
+        },
+      });
     }
   };
 
