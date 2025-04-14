@@ -14,23 +14,26 @@ import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 
-
 // Update the FormField interface to be more specific about the field types
 export interface FormField {
   name: string;
   label: string;
-  type: 'text' | 'number' | 'textarea' | 'select' | 'file';
+  type: 'text' | 'number' | 'textarea' | 'select' | 'file' | 'multiple-files';
   placeholder?: string;
   options?: { value: string | number; label: string }[];
   required?: boolean;
   validation?: (schema: z.ZodTypeAny) => z.ZodTypeAny;
   readOnly?: boolean;
   imageUrl?: string;
+  preview?: string;
+  existingImage?: string ;  // Add this new field
+  onDeleteImage?: (imageId?: number) => void; // Function to handle image deletion
+  existingImages?: Array<{ id?: number; url: string }>;
 }
 
 // Update the ResourceFormProps interface to be more specific about generic type T
 interface ResourceFormProps<T extends Record<string, any>> {
-  fields: FormField[];
+  fields: any[]; // Revert back to using FormField[]
   onSubmit: (data: T) => void;
   defaultValues?: Partial<T>;
   isSubmitting?: boolean;
@@ -47,18 +50,41 @@ export function ResourceForm<T extends Record<string, any>>({
   hideSubmitButton = false,
 }: ResourceFormProps<T>) {
   const formSchema = z.object(
-    fields.reduce((acc, field) => {
+    fields.reduce((acc:any, field) => {
       let schema: z.ZodTypeAny;
+      
+      // Handle nested fields
+      if (field.name.includes('.')) {
+        const [parent] = field.name.split('.');
+        if (!acc[parent]) {
+          acc[parent] = z.object({}).catchall(z.string());
+        }
+        return acc;
+      }
       
       if (field.type === 'number') {
         schema = z.coerce.number();
+      } else if (field.type === 'multiple-files') {
+        // Removed validation, just make it any[]
+        schema = z.any().array().optional();
       } else if (field.type === 'file') {
-        // Handle both File instances and string URLs
         schema = z.union([
           z.instanceof(File),
           z.string(),
           z.undefined()
         ]);
+        
+        if (field.required) {
+          schema = schema.refine(
+            (val) => {
+              // Consider the field valid if there's an existing image or a new file
+              return val instanceof File || (typeof val === 'string' && val.length > 0);
+            },
+            {
+              message: `${field.label} обязательно для заполнения`
+            }
+          );
+        }
       } else {
         schema = z.string();
       }
@@ -88,13 +114,46 @@ export function ResourceForm<T extends Record<string, any>>({
     }, {}) as Record<string, z.ZodTypeAny>
   );
 
+  // Transform defaultValues to handle nested fields
+  const transformedDefaultValues = fields.reduce((acc, field) => {
+    if (field.name.includes('.')) {
+      const [parent, child] = field.name.split('.');
+      if (!acc[parent]) {
+        acc[parent] = {};
+      }
+      acc[parent][child] = defaultValues[parent]?.[child] || '';
+    } else {
+      acc[field.name] = defaultValues[field.name] || '';
+    }
+    return acc;
+  }, {} as Record<string, any>);
+
   const form = useForm<any>({
     resolver: zodResolver(formSchema),
-    defaultValues,
+    defaultValues: transformedDefaultValues,
   });
 
   const handleSubmit = (data: any) => {
-    onSubmit(data);
+    // Transform form data back to the expected structure
+    const transformedData = Object.entries(data).reduce((acc, [key, value]) => {
+      if (typeof value === 'object' && value !== null && !(value instanceof File)) {
+        acc[key] = value;
+      } else {
+        const keys = key.split('.');
+        if (keys.length > 1) {
+          const [parent, child] = keys;
+          if (!acc[parent]) {
+            acc[parent] = {};
+          }
+          acc[parent][child] = value;
+        } else {
+          acc[key] = value;
+        }
+      }
+      return acc;
+    }, {} as Record<string, any>);
+
+    onSubmit(transformedData as T);
   };
 
   const { setValue } = form;
@@ -130,7 +189,7 @@ export function ResourceForm<T extends Record<string, any>>({
                           <SelectValue placeholder={field.placeholder} />
                         </SelectTrigger>
                         <SelectContent>
-                          {field.options?.map((option) => (
+                          {field.options?.map((option:any) => (
                             <SelectItem
                               key={option.value}
                               value={String(option.value)}
@@ -142,28 +201,67 @@ export function ResourceForm<T extends Record<string, any>>({
                       </Select>
                     ) : field.type === 'file' ? (
                       <div className="space-y-2">
-                        <div className="space-y-4">
-                          {field.imageUrl && (
-                            <div className="w-24 h-24 relative rounded-lg overflow-hidden border">
-                              <img 
-                                src={field.imageUrl} 
-                                alt="Current image" 
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          )}
-                          <Input
-                            type="file"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                setValue(field.name, file);
-                              }
-                            }}
-                            required={field.required && !field.imageUrl}
-                            accept="image/*"
-                          />
-                        </div>
+                        {(field.preview || field.existingImage) && (
+                          <div className="mb-2">
+                            <img 
+                              src={field.preview || field.existingImage} 
+                              alt={field.label} 
+                              className="h-20 w-20 object-cover rounded-md"
+                            />
+                          </div>
+                        )}
+                        <Input
+                          type="file"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setValue(field.name, file);
+                            }
+                          }}
+                          required={field.required && !field.existingImage}
+                          accept="image/*"
+                        />
+                      </div>
+                    ) : field.type === 'multiple-files' ? (
+                      <div className="space-y-2">
+                        {/* Show existing images */}
+                        {field.existingImages && field.existingImages.length > 0 && (
+                          <div className="flex flex-wrap gap-4 mb-4">
+                            {field.existingImages.map((img:any, idx:any) => (
+                              <div key={img.id || idx} className="relative">
+                                <img 
+                                  src={img.url} 
+                                  alt={`Image ${idx + 1}`} 
+                                  className="h-20 w-20 object-cover rounded-md"
+                                />
+                                {field.onDeleteImage && (
+                                  <button
+                                    type="button"
+                                    onClick={() => field.onDeleteImage(img.id)}
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600"
+                                    aria-label="Delete image"
+                                  >
+                                    ×
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {/* Multiple file input */}
+                        <Input
+                          type="file"
+                          onChange={(e) => {
+                            const files = Array.from(e.target.files || []);
+                            const currentValues = formField.value || [];
+                            setValue(field.name, [...currentValues, ...files]);
+                          }}
+                          multiple
+                          accept="image/*"
+                        />
+                        
+                        
                       </div>
                     ) : (
                       <Input

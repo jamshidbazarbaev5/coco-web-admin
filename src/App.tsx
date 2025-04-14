@@ -18,6 +18,8 @@ import { ProductsPage } from "./pages/ProductsPage";
 import CollectionForm from "./pages/CollectionForm";
 import { Toaster } from 'sonner';
 import { ErrorDialog } from './components/ui/error-dialog';
+import { AboutPage } from "./pages/About";
+import { ServicePage } from "./pages/Service";
 
 const queryClient = new QueryClient()
 
@@ -49,6 +51,8 @@ function App() {
             <Route path="/orders" element={<Orders />} />
             <Route path="/collections" element={<CollectionForm />} />
             <Route path="/products" element={<ProductsPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path='service' element={<ServicePage/>} />
           </Route>
         </Routes>
     </QueryClientProvider>

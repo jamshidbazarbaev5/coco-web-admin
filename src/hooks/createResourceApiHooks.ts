@@ -31,7 +31,7 @@ export function createResourceApiHooks<T extends BaseResource, R = { results: T[
     const queryClient = useQueryClient();
     
     return useMutation({
-      mutationFn: async (newResource: T) => {
+      mutationFn: async (newResource: T | FormData) => {
         const isFormData = newResource instanceof FormData;
         const config = isFormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {};
         

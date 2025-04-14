@@ -27,16 +27,20 @@ interface Product {
 interface Collection {
   id?: number;
   product: number | string;
-  product_details?: Product;
+  products_details?: any;
   title_uz: string;
   title_ru: string;
   caption_uz: string;
   caption_ru: string;
   description_uz: string;
   description_ru: string;
+  collection_images?: Array<{
+    id?: number;
+    image: string | File;
+  }>;
+  images_to_delete?: number[];  // Add this new field
+ 
 }
-
-
 
 export default function CollectionPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -44,6 +48,7 @@ export default function CollectionPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+  const [imagesToDelete, setImagesToDelete] = useState<number[]>([]);
 
   const { data, isLoading, refetch } = useGetCollections({ params: { page: currentPage } });
   const { mutate: createCollection, isPending: isCreating } = useCreateCollection();
@@ -84,7 +89,6 @@ export default function CollectionPage() {
       name: 'product',
       label: 'Продукт',
       type: 'select',
-      required: true,
       options: isLoadingProducts 
         ? [{ value: '', label: 'Загрузка продуктов...' }]
         : products.map(p => ({
@@ -96,50 +100,73 @@ export default function CollectionPage() {
       name: 'title_uz',
       label: 'Название (УЗ)',
       type: 'text',
-      required: true,
     },
     {
       name: 'title_ru',
       label: 'Название (РУ)',
       type: 'text',
-      required: true,
     },
     {
       name: 'caption_uz',
       label: 'Подпись (УЗ)',
       type: 'text',
-      required: true,
     },
     {
       name: 'caption_ru',
       label: 'Подпись (РУ)',
       type: 'text',
-      required: true,
     },
     {
       name: 'description_uz',
       label: 'Описание (УЗ)',
       type: 'textarea',
-      required: true,
     },
     {
       name: 'description_ru',
       label: 'Описание (РУ)',
       type: 'textarea',
-      required: true,
     },
+    {
+      name: 'collection_images',
+      label: 'Изображения коллекции',
+      type: 'multiple-files',
+      required: false,
+      existingImages: editingCollection?.collection_images
+        ?.filter(img => !imagesToDelete.includes(img.id || -1))
+        ?.map(img => ({
+          id: img.id,
+          url: typeof img.image === 'string' ? img.image : URL.createObjectURL(img.image)
+      })),
+      onDeleteImage: (imageId?: number) => {
+        if (imageId) {
+          setImagesToDelete(prev => [...prev, imageId]);
+          // Instantly update the editingCollection to remove the deleted image
+          setEditingCollection(prev => {
+            if (!prev) return null;
+            return {
+              ...prev,
+              collection_images: prev.collection_images?.filter(img => img.id !== imageId)
+            };
+          });
+        }
+      }
+    }
   ];
 
-  const columns: any= [
+  const columns: any = [
     {
-      header: 'Продукт',
-      accessorKey: 'product_details',
+      header: 'Продукты',
+      accessorKey: 'products_details',
       cell: (item: Collection) => {
-        const product = item.product_details;
-        return product ? (
+        const products = item.products_details;
+        return products && products.length > 0 ? (
           <div className="space-y-1">
-            <div className="font-medium">{product.title_uz}</div>
-            <div className="text-sm text-gray-500">ID: {product.id}</div>
+            {products.map((product:any) => (
+              <div key={product.id}>
+                <div className="font-medium">{product.title_uz}</div>
+                <div className="text-sm text-gray-500">ID: {product.id}</div>
+              </div>
+            ))}
           </div>
         ) : null;
       }
@@ -165,15 +192,40 @@ export default function CollectionPage() {
   ];
 
   const handleSubmit = async (formData: Collection) => {
-    const submitData = {
-      ...formData,
-      product: Number(formData.product),
-    };
+    const submitData = new FormData();
+    
+    // Add basic fields
+    submitData.append('product', formData.product.toString());
+    submitData.append('title_uz', formData.title_uz);
+    submitData.append('title_ru', formData.title_ru);
+    submitData.append('caption_uz', formData.caption_uz);
+    submitData.append('caption_ru', formData.caption_ru);
+    submitData.append('description_uz', formData.description_uz);
+    submitData.append('description_ru', formData.description_ru);
+
+    // Add uploaded_products using the main product ID
+    submitData.append('uploaded_products[0]', formData.product.toString());
+
+    // Add images to delete
+    if (imagesToDelete.length > 0) {
+      imagesToDelete.forEach((id, index) => {
+        submitData.append(`images_to_delete[${index}]`, id.toString());
+      });
+    }
+
+    // Handle multiple images
+    if (formData.collection_images) {
+      formData.collection_images.forEach((image, index) => {
+        if (image instanceof File) {
+          submitData.append(`collection_images[${index}]image`, image);
+        }
+      });
+    }
 
     if (editingCollection?.id) {
       updateCollection({
-        ...submitData,
         id: editingCollection.id,
+        formData: submitData,
       }, {
         onSuccess: () => {
           setIsFormOpen(false);
@@ -192,10 +244,10 @@ export default function CollectionPage() {
   };
 
   const handleEdit = (collection: Collection) => {
-    if (collection.product_details) {
+    if (collection.products_details && collection.products_details.length > 0) {
       setEditingCollection({
         ...collection,
-        product: collection.product_details.id.toString(),
+        product: collection.products_details[0].id.toString(),
       });
     }
     setIsFormOpen(true);

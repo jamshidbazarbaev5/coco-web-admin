@@ -3,8 +3,11 @@ import { createResourceApiHooks } from '../hooks/createResourceApiHooks';
 // Types
 export interface SocialMediaUrls {
   instagram?: string;
+  instagram_name?: string;
   telegram?: string;
+  telegram_name?: string;
   facebook?: string;
+  facebook_name?: string;
   [key: string]: string | undefined;
 }
 
@@ -15,8 +18,11 @@ export interface ContactDetail {
   address_uz: string;
   phone: string;
   instagram: string;
+  instagram_name: string;
   telegram: string;
+  telegram_name: string;
   facebook: string;
+  facebook_name: string;
   
   map_url: string;
   social_media_urls: SocialMediaUrls;

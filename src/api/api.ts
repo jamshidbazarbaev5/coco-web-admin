@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
-import { refreshToken } from './auth';
+  import { refreshToken } from './auth';
 import { useErrorStore } from '../store/errorStore';
 
 interface ApiErrorResponse {

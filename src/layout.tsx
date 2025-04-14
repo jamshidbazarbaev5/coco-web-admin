@@ -5,6 +5,7 @@ import {
   BarChart3,
   User,
   Mail,
+  File,
 } from 'lucide-react';
 import { ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -26,7 +27,11 @@ export default function Layout({ children }: LayoutProps) {
     { icon: User, label: 'Контактные данные', href: '/details' },
     { icon: Mail, label: 'Обратная связь', href: '/feedback' },
     { icon: ShoppingBag, label: 'Заказы', href: '/orders' },
-    { icon: ShoppingBag, label: 'Товары', href: '/products' }
+    { icon: ShoppingBag, label: 'Товары', href: '/products' },
+
+    { icon: File, label: 'Примущества', href: '/about' },
+
+    { icon: File, label: 'Примущества2', href: '/service' },
   ];
 
   return (
