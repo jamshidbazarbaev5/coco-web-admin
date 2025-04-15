@@ -266,19 +266,26 @@ export function EditProduct() {
           submitFormData.append(`product_attributes[${index}]new_price`, attr.new_price.toString());
         }
 
-        // Handle multiple images
-        attr.attribute_images.forEach((img: any, imgIndex: number) => {
-          if (img.isNew && img.image instanceof File) {
-            submitFormData.append(
-              `product_attributes[${index}]attribute_images[${imgIndex}]image`,
-              img.image
-            );
-          } else if (!img.isNew && img.id) {
-            submitFormData.append(
-              `product_attributes[${index}]attribute_images[${imgIndex}]id`,
-              img.id.toString()
-            );
-          }
+        // Handle deleted images for this attribute
+        const deletedImagesForAttr = deletedImages.filter(imageId => {
+          const image = product?.product_attributes[index]?.attribute_images?.find((img: any) => img.id === imageId);
+          return !!image;
+        });
+
+        deletedImagesForAttr.forEach((imageId, imgIndex) => {
+          submitFormData.append(
+            `product_attributes[${index}]images_to_delete[${imgIndex}]`,
+            imageId.toString()
+          );
+        });
+        
+        // Handle new images
+        const newImages = attr.attribute_images.filter((img: any) => img.isNew && img.image instanceof File);
+        newImages.forEach((img: any, imgIndex: number) => {
+          submitFormData.append(
+            `product_attributes[${index}]attribute_images[${imgIndex}]image`,
+            img.image
+          );
         });
         
         if (attr.sizes && attr.sizes.length > 0) {
