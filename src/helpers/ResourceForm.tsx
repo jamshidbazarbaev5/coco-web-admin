@@ -1,7 +1,4 @@
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button } from '../components/ui/button';
 import {
   Form,
   FormControl,
@@ -10,6 +7,7 @@ import {
   FormLabel,
   FormMessage,
 } from '../components/ui/form';
+import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
@@ -22,7 +20,7 @@ export interface FormField {
   placeholder?: string;
   options?: { value: string | number; label: string }[];
   required?: boolean;
-  validation?: (schema: z.ZodTypeAny) => z.ZodTypeAny;
+  // validation?: (schema: z.ZodTypeAny) => z.ZodTypeAny;
   readOnly?: boolean;
   imageUrl?: string;
   preview?: string;
@@ -49,71 +47,6 @@ export function ResourceForm<T extends Record<string, any>>({
   title,
   hideSubmitButton = false,
 }: ResourceFormProps<T>) {
-  const formSchema = z.object(
-    fields.reduce((acc:any, field) => {
-      let schema: z.ZodTypeAny;
-      
-      // Handle nested fields
-      if (field.name.includes('.')) {
-        const [parent] = field.name.split('.');
-        if (!acc[parent]) {
-          acc[parent] = z.object({}).catchall(z.string());
-        }
-        return acc;
-      }
-      
-      if (field.type === 'number') {
-        schema = z.coerce.number();
-      } else if (field.type === 'multiple-files') {
-        // Removed validation, just make it any[]
-        schema = z.any().array().optional();
-      } else if (field.type === 'file') {
-        schema = z.union([
-          z.instanceof(File),
-          z.string(),
-          z.undefined()
-        ]);
-        
-        if (field.required) {
-          schema = schema.refine(
-            (val) => {
-              // Consider the field valid if there's an existing image or a new file
-              return val instanceof File || (typeof val === 'string' && val.length > 0);
-            },
-            {
-              message: `${field.label} обязательно для заполнения`
-            }
-          );
-        }
-      } else {
-        schema = z.string();
-      }
-      
-      if (field.required) {
-        if (field.type === 'number') {
-          schema = (schema as z.ZodNumber).min(1, `${field.label} обязательно для заполнения`);
-        } else if (field.type === 'file') {
-          schema = z.union([
-            z.instanceof(File),
-            z.string()
-          ]).refine(val => val !== undefined && val !== null, {
-            message: `${field.label} обязательно для заполнения`
-          });
-        } else {
-          schema = (schema as z.ZodString).min(1, `${field.label} обязательно для заполнения`);
-        }
-      } else {
-        schema = schema.optional();
-      }
-      
-      if (field.validation) {
-        schema = field.validation(schema);
-      }
-      
-      return { ...acc, [field.name]: schema };
-    }, {}) as Record<string, z.ZodTypeAny>
-  );
-
   // Transform defaultValues to handle nested fields
   const transformedDefaultValues = fields.reduce((acc, field) => {
     if (field.name.includes('.')) {
@@ -129,7 +62,6 @@ export function ResourceForm<T extends Record<string, any>>({
   }, {} as Record<string, any>);
 
   const form = useForm<any>({
-    resolver: zodResolver(formSchema),
     defaultValues: transformedDefaultValues,
   });
 

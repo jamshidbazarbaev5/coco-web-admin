@@ -138,7 +138,7 @@ export function CreateProduct() {
             color_code: '#000000',
             color_name_uz: '',
             color_name_ru: '',
-            image: new File([], 'placeholder.jpg'),
+            attribute_images: [],
             sizes: [],
             price: 0,
             new_price: 0,

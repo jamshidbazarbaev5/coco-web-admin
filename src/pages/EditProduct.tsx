@@ -28,6 +28,7 @@ export function EditProduct() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [, setAttributesModified] = useState(false);
   const [deletedAttributes, setDeletedAttributes] = useState<number[]>([]);
+  const [deletedImages, setDeletedImages] = useState<number[]>([]);
 
   const fetchAllPages = async (initialUrl: string) => {
     let results: any[] = [];
@@ -122,12 +123,11 @@ export function EditProduct() {
             color_code: attr.color_code || '#000000',
             color_name_uz: attr.color_name_uz || '',
             color_name_ru: attr.color_name_ru || '',
-            image: attr.image,
-            sizes: attr.sizes,
+            attribute_images: attr.attribute_images || [],
+            sizes: attr.sizes || [],
             price: attr.price || 0,
             new_price: attr.new_price || '',
             quantity: attr.quantity || 0,
-            newImage: null
           }))
         );
       } else {
@@ -135,11 +135,11 @@ export function EditProduct() {
           color_code: '#000000',
           color_name_uz: '',
           color_name_ru: '',
+          attribute_images: [],
           sizes: [],
           price: 0,
           new_price: '',
           quantity: 0,
-          newImage: null
         }]);
       }
     }
@@ -169,9 +169,11 @@ export function EditProduct() {
       color_code: '#000000',
       color_name_uz: '',
       color_name_ru: '',
+      attribute_images: [],
       sizes: [],
-      image: null,
-      newImage: null
+      price: 0,
+      new_price: '',
+      quantity: 0,
     }]);
   };
 
@@ -185,6 +187,41 @@ export function EditProduct() {
     }
     
     setProductAttributes(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Add function to handle image deletion
+  const handleImageDelete = (attrIndex: number, imageId: number) => {
+    setAttributesModified(true);
+    setDeletedImages(prev => [...prev, imageId]);
+    
+    setProductAttributes(prev => {
+      const updated = [...prev];
+      updated[attrIndex] = {
+        ...updated[attrIndex],
+        attribute_images: updated[attrIndex].attribute_images.filter((img: any) => img.id !== imageId)
+      };
+      return updated;
+    });
+  };
+
+  // Add function to handle image addition
+  const handleImageAdd = (attrIndex: number, files: FileList | null) => {
+    if (!files) return;
+    
+    setAttributesModified(true);
+    setProductAttributes(prev => {
+      const updated = [...prev];
+      const newImages = Array.from(files).map(file => ({
+        image: file,
+        isNew: true
+      }));
+      
+      updated[attrIndex] = {
+        ...updated[attrIndex],
+        attribute_images: [...updated[attrIndex].attribute_images, ...newImages]
+      };
+      return updated;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -204,13 +241,17 @@ export function EditProduct() {
       submitFormData.append('description_ru', formData.description_ru);
       submitFormData.append('material', formData.material.toString());
 
-      // Add deleted attributes to form data
+      // Add deleted attributes and images to form data
       deletedAttributes.forEach((id, index) => {
         submitFormData.append(`attributes_to_delete[${index}]`, id.toString());
       });
 
+      deletedImages.forEach((id, index) => {
+        submitFormData.append(`images_to_delete[${index}]`, id.toString());
+      });
+
       // Product attributes
-      await Promise.all(productAttributes.map(async (attr, index) => {
+      productAttributes.forEach((attr, index) => {
         if (attr.id) {
           submitFormData.append(`product_attributes[${index}]id`, attr.id.toString());
         }
@@ -224,19 +265,21 @@ export function EditProduct() {
         if (attr.new_price) {
           submitFormData.append(`product_attributes[${index}]new_price`, attr.new_price.toString());
         }
-        
-        if (attr.newImage instanceof File) {
-          submitFormData.append(`product_attributes[${index}]image`, attr.newImage);
-        } else if (attr.image) {
-          try {
-            const response = await fetch(attr.image);
-            const blob = await response.blob();
-            const file = new File([blob], 'existing-image.jpg', { type: 'image/jpeg' });
-            submitFormData.append(`product_attributes[${index}]image`, file);
-          } catch (error) {
-            console.error('Error converting image URL to file:', error);
+
+        // Handle multiple images
+        attr.attribute_images.forEach((img: any, imgIndex: number) => {
+          if (img.isNew && img.image instanceof File) {
+            submitFormData.append(
+              `product_attributes[${index}]attribute_images[${imgIndex}]image`,
+              img.image
+            );
+          } else if (!img.isNew && img.id) {
+            submitFormData.append(
+              `product_attributes[${index}]attribute_images[${imgIndex}]id`,
+              img.id.toString()
+            );
           }
-        }
+        });
         
         if (attr.sizes && attr.sizes.length > 0) {
           attr.sizes.forEach((sizeId: number, sizeIndex: number) => {
@@ -246,7 +289,7 @@ export function EditProduct() {
             );
           });
         }
-      }));
+      });
 
       console.log('Submitting form data:', Object.fromEntries(submitFormData.entries()));
       
@@ -257,6 +300,7 @@ export function EditProduct() {
       });
       
       setDeletedAttributes([]);
+      setDeletedImages([]);
       navigate('/products');
     } catch (error) {
       console.error('Failed to update product:', error);
@@ -517,27 +561,52 @@ export function EditProduct() {
                         <Label htmlFor={`image-${index}`}>
                           Изображение <span className="text-red-500">*</span>
                         </Label>
-                        {attr.image && !attr.newImage && (
-                          <div className="mb-2">
-                            <img 
-                              src={attr.image} 
-                              alt={`Variant ${index + 1}`} 
-                              className="h-20 w-20 object-cover rounded-md"
-                            />
+                        <Input 
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={(e) => handleImageAdd(index, e.target.files)}
+                          className="bg-white w-full"
+                        />
+
+                        {/* Image Preview Grid */}
+                        {attr.attribute_images.length > 0 && (
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
+                            {attr.attribute_images.map((img: any, imgIndex: number) => (
+                              <div key={img.id || imgIndex} className="relative group">
+                                <div className="aspect-square rounded-lg border overflow-hidden bg-white">
+                                  {img.isNew ? (
+                                    <img 
+                                      src={URL.createObjectURL(img.image)}
+                                      alt={`Preview ${imgIndex + 1}`}
+                                      className="w-full h-full object-cover"
+                                      onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
+                                    />
+                                  ) : (
+                                    <img 
+                                      src={img.image}
+                                      alt={`Product ${imgIndex + 1}`}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  )}
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="sm"
+                                  className="absolute top-2 right-2 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  onClick={() => img.id ? handleImageDelete(index, img.id) : setProductAttributes(prev => {
+                                    const updated = [...prev];
+                                    updated[index].attribute_images = updated[index].attribute_images.filter((_: any, i: number) => i !== imgIndex);
+                                    return updated;
+                                  })}
+                                >
+                                  <TrashIcon className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            ))}
                           </div>
                         )}
-                        <Input 
-                          id={`image-${index}`} 
-                          type="file" 
-                          accept="image/*"
-                          required={!attr.image}
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              handleAttributeChange(index, 'newImage', file);
-                            }
-                          }}
-                        />
                       </div>
                       
                       <div className="space-y-4">

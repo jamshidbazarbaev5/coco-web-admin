@@ -1,6 +1,4 @@
 import { useForm, useFieldArray } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Button } from '../components/ui/button'
 import {
   Form,
@@ -8,7 +6,6 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from '../components/ui/form';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
@@ -27,31 +24,7 @@ interface ProductFormProps {
   sizes: Array<{ id: number; name_uz: string; name_ru: string }>;
 }
 
-const productSchema = z.object({
-  brand: z.coerce.number().min(1, 'Бренд обязателен'),
-  category: z.coerce.number().min(1, 'Категория обязательна'),
-  title_uz: z.string().min(1, 'Название (UZ) обязательно'),
-  title_ru: z.string().min(1, 'Название (RU) обязательно'),
-  description_uz: z.string().min(1, 'Описание (UZ) обязательно'),
-  description_ru: z.string().min(1, 'Описание (RU) обязательно'),
-  material: z.coerce.number().min(1, 'Материал обязателен'),
-  product_attributes: z.array(z.object({
-    color_code: z.string().min(1, 'Код цвета обязателен'),
-    color_name_uz: z.string().min(1, 'Название цвета (UZ) обязательно'),
-    color_name_ru: z.string().min(1, 'Название цвета (RU) обязательно'),
-    image: z.union([
-      z.instanceof(File),
-      z.string()
-    ]),
-    sizes: z.array(z.coerce.number()).min(1, 'Выберите хотя бы один размер'),
-    price: z.coerce.number().min(0, 'Цена должна быть положительной'),
-    new_price: z.coerce.number().min(0).optional(),
-    quantity: z.coerce.number().min(0, 'Количество должно быть положительным'),
-  })).min(1, 'Добавьте хотя бы один атрибут продукта'),
-});
-
-// Define the type from the schema to ensure they match
-type ProductFormSchema = z.infer<typeof productSchema>;
+type ProductFormSchema = ProductFormData;
 
 export function ProductForm({
   onSubmit,
@@ -64,8 +37,19 @@ export function ProductForm({
 }: ProductFormProps) {
   console.log('A. ProductForm received defaultValues:', defaultValues);
 
+  // Transform the defaultValues to handle image conversion
+  const transformedDefaultValues = defaultValues ? {
+    ...defaultValues,
+    product_attributes: defaultValues.product_attributes?.map(attr => ({
+      ...attr,
+      attribute_images: attr.attribute_images?.map(img => ({
+        id: img.id,
+        image: typeof img.image === 'string' ? new File([], img.image) : img.image
+      }))
+    }))
+  } : undefined;
+
   const form = useForm<ProductFormSchema>({
-    resolver: zodResolver(productSchema),
     defaultValues: {
       brand: 0,
       category: 0,
@@ -78,13 +62,13 @@ export function ProductForm({
         color_code: '#000000',
         color_name_uz: '',
         color_name_ru: '',
-        image: new File([], 'placeholder.jpg'),
+        attribute_images: [],
         sizes: [],
         price: 0,
         new_price: 0,
         quantity: 0
       }],
-      ...defaultValues
+      ...transformedDefaultValues
     },
   });
 
@@ -95,6 +79,26 @@ export function ProductForm({
     control: form.control,
     name: 'product_attributes',
   });
+
+  // Single field array for all attribute images
+
+
+  const handleImageAppend = (attributeIndex: number, file: File) => {
+    const currentAttributes = form.getValues('product_attributes');
+    const updatedAttributes = [...currentAttributes];
+    if (!updatedAttributes[attributeIndex].attribute_images) {
+      updatedAttributes[attributeIndex].attribute_images = [];
+    }
+    updatedAttributes[attributeIndex].attribute_images.push({ image: file });
+    form.setValue('product_attributes', updatedAttributes);
+  };
+
+  const handleImageRemove = (attributeIndex: number, imageIndex: number) => {
+    const currentAttributes = form.getValues('product_attributes');
+    const updatedAttributes = [...currentAttributes];
+    updatedAttributes[attributeIndex].attribute_images.splice(imageIndex, 1);
+    form.setValue('product_attributes', updatedAttributes);
+  };
 
   const validateAndSubmit = async (data: ProductFormSchema) => {
     console.log('D. ValidateAndSubmit received data:', data);
@@ -110,7 +114,9 @@ export function ProductForm({
           color_code: attr.color_code,
           color_name_uz: attr.color_name_uz,
           color_name_ru: attr.color_name_ru,
-          image: typeof attr.image === 'string' ? new File([], attr.image) : attr.image,
+          attribute_images: attr.attribute_images.map(image => ({
+            image: typeof image.image === 'string' ? new File([], image.image) : image.image
+          })),
           sizes: attr.sizes,
           price: attr.price,
           new_price: attr.new_price,
@@ -157,7 +163,6 @@ export function ProductForm({
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -186,7 +191,6 @@ export function ProductForm({
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -214,7 +218,6 @@ export function ProductForm({
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -233,7 +236,6 @@ export function ProductForm({
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -247,7 +249,6 @@ export function ProductForm({
                   <FormControl>
                     <Textarea {...field} />
                   </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -263,7 +264,6 @@ export function ProductForm({
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -277,7 +277,6 @@ export function ProductForm({
                   <FormControl>
                     <Textarea {...field} />
                   </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -294,7 +293,7 @@ export function ProductForm({
                 color_code: '#000000',
                 color_name_uz: '',
                 color_name_ru: '',
-                image: new File([], 'placeholder.jpg'),
+                attribute_images: [],
                 sizes: [],
                 price: 0,
                 new_price: 0,
@@ -340,7 +339,6 @@ export function ProductForm({
                             className="flex-1"
                           />
                         </div>
-                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -354,7 +352,6 @@ export function ProductForm({
                         <FormControl>
                           <Input {...colorNameUzField} />
                         </FormControl>
-                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -368,7 +365,6 @@ export function ProductForm({
                         <FormControl>
                           <Input {...colorNameRuField} />
                         </FormControl>
-                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -385,7 +381,6 @@ export function ProductForm({
                         <FormControl>
                           <Input type="number" {...field} />
                         </FormControl>
-                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -404,7 +399,6 @@ export function ProductForm({
                             value={field.value || ''} 
                           />
                         </FormControl>
-                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -418,7 +412,6 @@ export function ProductForm({
                         <FormControl>
                           <Input type="number" {...field} />
                         </FormControl>
-                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -456,61 +449,81 @@ export function ProductForm({
                           </div>
                         ))}
                       </div>
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                {/* Image Section */}
-                <FormField
-                  control={form.control}
-                  name={`product_attributes.${index}.image`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Изображение</FormLabel>
-                      <div className="space-y-4">
-                        {typeof field.value === 'string' && (
-                          <div className="relative w-32 h-32 rounded-lg overflow-hidden border">
-                            <img 
-                              src={field.value} 
-                              alt="Product" 
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        )}
-                        <FormControl>
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                field.onChange(file);
+                {/* Updated Image Section */}
+                <div className="space-y-4">
+                  <FormLabel>Изображения</FormLabel>
+                  
+                  {/* Single Image Input */}
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        handleImageAppend(index, file);
+                      }
+                    }}
+                    className="bg-white w-full"
+                  />
+
+                  {/* Image Preview Grid */}
+                  {form.getValues(`product_attributes.${index}.attribute_images`)?.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
+                      {form.getValues(`product_attributes.${index}.attribute_images`)?.map((imageField: any, imageIndex: number) => (
+                        <div key={imageIndex} className="relative group">
+                          <div className="aspect-square rounded-lg border overflow-hidden bg-white">
+                            {(() => {
+                              const imageValue = imageField.image;
+                              if (imageValue instanceof File) {
+                                return (
+                                  <div className="w-full h-full relative">
+                                    <img 
+                                      src={URL.createObjectURL(imageValue)}
+                                      alt={`Preview ${imageIndex + 1}`}
+                                      className="w-full h-full object-cover"
+                                      onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
+                                    />
+                                  </div>
+                                );
+                              } else if (typeof imageValue === 'string') {
+                                return (
+                                  <img 
+                                    src={imageValue}
+                                    alt={`Product ${imageIndex + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                );
                               }
-                            }}
-                            className="bg-white"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </div>
-                    </FormItem>
+                              return null;
+                            })()}
+                          </div>
+                          {/* Delete Button */}
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            className="absolute top-2 right-2 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => handleImageRemove(index, imageIndex)}
+                          >
+                            <TrashIcon className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
                   )}
-                />
+                </div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Display form-level errors for product attributes */}
-        {form.formState.errors.product_attributes?.message && (
-          <div className="text-red-500 text-sm">
-            {form.formState.errors.product_attributes.message}
-          </div>
-        )}
-
         <Button 
           type="submit" 
-          disabled={isSubmitting || !form.formState.isValid}
+          disabled={isSubmitting}
           onClick={() => {
             console.log('Current form values:', form.getValues());
             console.log('Form errors:', form.formState.errors);
@@ -518,14 +531,6 @@ export function ProductForm({
         >
           {isSubmitting ? 'Сохранение...' : 'Сохранить продукт'}
         </Button>
-
-        {/* Add error display */}
-        {Object.keys(form.formState.errors).length > 0 && (
-          <div className="text-red-500 mt-4">
-            <p>В форме есть ошибки:</p>
-            <pre>{JSON.stringify(form.formState.errors, null, 2)}</pre>
-          </div>
-        )}
       </form>
     </Form>
   );

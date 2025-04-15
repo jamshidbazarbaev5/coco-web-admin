@@ -45,6 +45,27 @@ export function SizesPage() {
       placeholder: 'Введите название размера на узбекском',
       required: true,
     },
+    {
+      name: 'length',
+      label: 'Длина',
+      type: 'text',
+      placeholder: 'Введите длину',
+      required: true,
+    },
+    {
+      name: 'width',
+      label: 'Ширина',
+      type: 'text',
+      placeholder: 'Введите ширину',
+      required: true,
+    },
+    {
+      name: 'height',
+      label: 'Высота',
+      type: 'text',
+      placeholder: 'Введите высоту',
+      required: true,
+    },
   ];
 
   // Table columns definition
@@ -60,6 +81,18 @@ export function SizesPage() {
     {
       header: 'Название (Узбекский)',
       accessorKey: 'name_uz',
+    },
+    {
+      header: 'Длина',
+      accessorKey: 'length',
+    },
+    {
+      header: 'Ширина',
+      accessorKey: 'width',
+    },
+    {
+      header: 'Высота',
+      accessorKey: 'height',
     },
   ];
 

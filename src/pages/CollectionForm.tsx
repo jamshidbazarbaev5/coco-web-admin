@@ -9,19 +9,28 @@ interface Product {
   id: number;
   title_uz: string;
   title_ru: string;
-  price: string;
   brand: number;
   category: number;
   description_uz: string;
   description_ru: string;
   material: number;
-  quantity: number;
   product_attributes: Array<{
-    color: string;
-    image: string;
+    id: number;
+    color_code: string;
     sizes: number[];
+    color_name_ru: string;
+    color_name_uz: string;
+    price: string;
+    new_price: string;
+    quantity: number;
+    created_at: string;
+    on_sale: boolean;
+    attribute_images: Array<{
+      id: number;
+      product: string;
+      image: string;
+    }>;
   }>;
-  on_sale: boolean;
 }
 
 interface Collection {
@@ -93,7 +102,7 @@ export default function CollectionPage() {
         ? [{ value: '', label: 'Загрузка продуктов...' }]
         : products.map(p => ({
             value: p.id.toString(),
-            label: `${p.id} - ${p.title_uz}`,
+            label: `${p.id} - ${p.title_uz} (${p.product_attributes[0]?.price})`,
           })),
     },
     {

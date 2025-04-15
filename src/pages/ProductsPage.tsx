@@ -44,10 +44,10 @@ export function ProductsPage() {
       header: 'Изображение',
       accessorKey: 'image',
       cell: (product: Product) => (
-        product?.product_attributes[0]?.image ? (
+        product?.product_attributes[0]?.attribute_images?.[0]?.image ? (
           <img 
-            src={product.product_attributes[0].image} 
-            alt="Товар"
+            src={product.product_attributes[0].attribute_images[0].image} 
+            alt={product.product_attributes[0].attribute_images[0].product}
             className="w-16 h-16 object-cover rounded"
           />
         ) : (
@@ -92,7 +92,11 @@ export function ProductsPage() {
                 className="w-3 h-3 rounded-full" 
                 style={{ backgroundColor: attr.color_code }}
               />
-              <span>{attr.quantity}</span>
+              {attr.quantity === 0 ? (
+                <span className="text-red-500">распродан</span>
+              ) : (
+                <span>{attr.quantity}</span>
+              )}
             </div>
           ))}
         </div>

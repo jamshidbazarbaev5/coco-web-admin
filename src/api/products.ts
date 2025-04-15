@@ -1,11 +1,16 @@
 import { createResourceApiHooks } from '../hooks/createResourceApiHooks';
 
+export interface AttributeImage {
+  image: File;
+  id?: number;
+}
+
 export interface ProductAttribute {
   color_code: string;  
   color_name_uz: string;
   color_name_ru: string;
-  image: File;
-  sizes: number[];  // Updated to match the new structure
+  attribute_images: AttributeImage[];
+  sizes: number[];
   price: number;
   new_price?: number;
   quantity: number;
@@ -30,14 +35,18 @@ export interface Product extends Omit<ProductFormData, 'product_attributes'> {
   id?: number;
   product_attributes: Array<{
     id: number;
-    image: any;
-    sizes: number[];
     color_code: string;
     color_name_uz: string;
     color_name_ru: string;
     price: number;
     new_price?: number;
     quantity: number;
+    sizes: number[];
+    attribute_images: Array<{
+      id: number;
+      product: string;
+      image: string;
+    }>;
   }>;
   created_at?: string;
   color_code: string;
@@ -82,7 +91,12 @@ export const createProductFormData = (productData: ProductFormData): FormData =>
     formData.append(`product_attributes[${index}]color_code`, attr.color_code);
     formData.append(`product_attributes[${index}]color_name_uz`, attr.color_name_uz);
     formData.append(`product_attributes[${index}]color_name_ru`, attr.color_name_ru);
-    formData.append(`product_attributes[${index}]image`, attr.image);
+    attr.attribute_images.forEach((image, imageIndex) => {
+      formData.append(`product_attributes[${index}]attribute_images[${imageIndex}]image`, image.image);
+      if (image.id) {
+        formData.append(`product_attributes[${index}]attribute_images[${imageIndex}]id`, image.id.toString());
+      }
+    });
     formData.append(`product_attributes[${index}]price`, attr.price.toString());
     if (attr.new_price) {
       formData.append(`product_attributes[${index}]new_price`, attr.new_price.toString());
