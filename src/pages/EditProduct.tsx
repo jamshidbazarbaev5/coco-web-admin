@@ -262,9 +262,8 @@ export function EditProduct() {
         submitFormData.append(`product_attributes[${index}]price`, attr.price.toString());
         submitFormData.append(`product_attributes[${index}]quantity`, attr.quantity.toString());
         
-        if (attr.new_price) {
-          submitFormData.append(`product_attributes[${index}]new_price`, attr.new_price.toString());
-        }
+        // Modified new_price handling
+        submitFormData.append(`product_attributes[${index}]new_price`, attr.new_price || '');
 
         // Handle deleted images for this attribute
         const deletedImagesForAttr = deletedImages.filter(imageId => {

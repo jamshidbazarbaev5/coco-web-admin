@@ -98,9 +98,7 @@ export const createProductFormData = (productData: ProductFormData): FormData =>
       }
     });
     formData.append(`product_attributes[${index}]price`, attr.price.toString());
-    if (attr.new_price) {
-      formData.append(`product_attributes[${index}]new_price`, attr.new_price.toString());
-    }
+    formData.append(`product_attributes[${index}]new_price`, attr.new_price?.toString() || '');
     formData.append(`product_attributes[${index}]quantity`, attr.quantity.toString());
     
     if (attr.sizes && attr.sizes.length > 0) {
