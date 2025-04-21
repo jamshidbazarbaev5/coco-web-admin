@@ -129,9 +129,12 @@ export const createProductFormData = (productData: ProductFormData): FormData =>
         formData.append(`product_attributes[${index}]new_price`, attr.new_price.toString());
       }
 
-      // Only append quantity if it's greater than 0
-      if (attr.quantity > 0) {
-        formData.append(`product_attributes[${index}]quantity`, attr.quantity.toString());
+      // Handle quantity - if it's 0 send it, if empty send as ''
+      if (attr.quantity !== undefined) {
+        formData.append(
+          `product_attributes[${index}]quantity`, 
+          attr.quantity === 0 ? '0' : attr.quantity.toString() || ''
+        );
       }
       
       // Only append sizes if they exist and array is not empty

@@ -20,21 +20,27 @@ export function ProductsPage() {
     displayId: ((page - 1) * 10) + index + 1
   }));
    
-  const formatPrice = (price: any) => {
-    // Конвертировать цену в строку, если это число
+  const formatPrice = (price: number | string | null | undefined) => {
+    // Return early if price is null or undefined
+    if (price == null) return '0 сум';
+    
+    // Convert price to string if it's a number
     const priceStr = typeof price === 'number' ? price.toString() : price;
     
-    // Конвертировать строку цены в число, удаляя все символы кроме цифр и точки
+    // Convert string price to number, removing non-digit characters except dots
     const numPrice = Number(priceStr.replace(/[^\d.]/g, ''));
     
-    // Форматировать с пробелами между тысячами
+    // Return 0 if the price is NaN
+    if (isNaN(numPrice)) return '0 сум';
+    
+    // Format with spaces between thousands
     const formattedPrice = Math.floor(numPrice)
       .toString()
       .replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
     
-    // Вернуть отформатированную цену с суффиксом 'сум'
     return `${formattedPrice} сум`;
-  }
+  };
+
   const columns = [
     {
       header: 'ИД',
@@ -92,7 +98,9 @@ export function ProductsPage() {
                 className="w-3 h-3 rounded-full" 
                 style={{ backgroundColor: attr.color_code }}
               />
-              {attr.quantity === 0 ? (
+              {attr.quantity === null ? (
+                <span className="text-blue-500">предзаказ</span>
+              ) : attr.quantity === 0 ? (
                 <span className="text-red-500">распродан</span>
               ) : (
                 <span>{attr.quantity}</span>
