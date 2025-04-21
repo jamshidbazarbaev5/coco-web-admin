@@ -136,7 +136,7 @@ export function EditProduct() {
             sizes: attr.sizes || [],
             price: attr.price || 0,
             new_price: attr.new_price || '',
-            quantity: attr.quantity ?? 0, // Use nullish coalescing to handle zero properly
+            quantity: attr.quantity === undefined || attr.quantity === null ? '' : attr.quantity, // Handle empty, 0, and numbers
           }))
         );
       } else {
@@ -148,7 +148,7 @@ export function EditProduct() {
           sizes: [],
           price: 0,
           new_price: '',
-          quantity: 0,
+          quantity: '', // Initialize as empty
         }]);
       }
     }
@@ -189,7 +189,7 @@ export function EditProduct() {
       sizes: [],
       price: 0,
       new_price: '',
-      quantity: 0,
+      quantity: '',
     }]);
   };
 
@@ -319,7 +319,13 @@ export function EditProduct() {
         submitFormData.append(`product_attributes[${index}]color_name_uz`, attr.color_name_uz || '');
         submitFormData.append(`product_attributes[${index}]color_name_ru`, attr.color_name_ru || '');
         submitFormData.append(`product_attributes[${index}]price`, (attr.price || 0).toString());
-        submitFormData.append(`product_attributes[${index}]quantity`, Math.max(0, attr.quantity ?? 0).toString());
+        
+        // Handle quantity value - send empty string if empty, number otherwise
+        if (attr.quantity === '') {
+          submitFormData.append(`product_attributes[${index}]quantity`, '');
+        } else {
+          submitFormData.append(`product_attributes[${index}]quantity`, attr.quantity.toString());
+        }
         
         // Always send new_price as empty string if not provided
         submitFormData.append(
@@ -754,12 +760,15 @@ export function EditProduct() {
                           <Input
                             id={`quantity-${index}`}
                             type="number"
-                            min="0" // Prevent negative numbers
-                            value={attr.quantity ?? 0} // Use nullish coalescing
+                            value={attr.quantity}
                             onChange={(e) => {
-                              const value = Math.max(0, parseInt(e.target.value) || 0); // Ensure non-negative integer
-                              handleAttributeChange(index, 'quantity', value);
+                              const value = e.target.value;
+                              // If empty string, keep it empty
+                              // If number (including 0), convert to number
+                              const parsedValue = value === '' ? '' : parseInt(value);
+                              handleAttributeChange(index, 'quantity', parsedValue);
                             }}
+                            min="0"
                           />
                         </div>
                       </div>
