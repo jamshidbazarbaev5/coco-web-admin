@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useGetProduct } from '../api/products';
+import { useCreateSize, useUpdateSize } from '../api/sizes';
 import api from '../api/api';
 import { useState, useEffect } from 'react';
 import { Button } from '../components/ui/button';
@@ -29,6 +30,11 @@ export function EditProduct() {
   const [, setAttributesModified] = useState(false);
   const [deletedAttributes, setDeletedAttributes] = useState<number[]>([]);
   const [deletedImages, setDeletedImages] = useState<number[]>([]);
+
+  const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
+  const [selectedSize, setSelectedSize] = useState<any>(null);
+  const createSize = useCreateSize();
+  const updateSize = useUpdateSize();
 
   const fetchAllPages = async (initialUrl: string) => {
     let results: any[] = [];
@@ -87,7 +93,10 @@ export function EditProduct() {
         const transformedSizes = sizes.map(size => ({
           id: size.id,
           name_uz: size.name_uz,
-          name_ru: size.name_ru
+          name_ru: size.name_ru,
+          length: size.length,
+          width: size.width,
+          height: size.height
         }));
         
         setAllBrands(transformedBrands);
@@ -127,7 +136,7 @@ export function EditProduct() {
             sizes: attr.sizes || [],
             price: attr.price || 0,
             new_price: attr.new_price || '',
-            quantity: attr.quantity || 0,
+            quantity: attr.quantity ?? 0, // Use nullish coalescing to handle zero properly
           }))
         );
       } else {
@@ -158,7 +167,14 @@ export function EditProduct() {
     setAttributesModified(true);
     setProductAttributes(prev => {
       const updated = [...prev];
-      updated[index] = { ...updated[index], [field]: value };
+      if (field === 'sizes') {
+        // Initialize sizes array if it doesn't exist
+        updated[index].sizes = updated[index].sizes || [];
+        // Update sizes array
+        updated[index].sizes = value;
+      } else {
+        updated[index] = { ...updated[index], [field]: value };
+      }
       return updated;
     });
   };
@@ -224,6 +240,49 @@ export function EditProduct() {
     });
   };
 
+  const handleCreateSize = async (sizeData: any) => {
+    try {
+      await createSize.mutateAsync(sizeData);
+      setIsSizeModalOpen(false);
+      // Refresh sizes list
+      const sizes = await fetchAllPages('/products/crud/size/');
+      setAllSizes(sizes.map(size => ({
+        id: size.id,
+        name_uz: size.name_uz,
+        name_ru: size.name_ru,
+        length: size.length,
+        width: size.width,
+        height: size.height
+      })));
+    } catch (error) {
+      console.error('Failed to create size:', error);
+    }
+  };
+
+  const handleUpdateSize = async (sizeData: any) => {
+    try {
+      await updateSize.mutateAsync({ id: selectedSize.id, ...sizeData });
+      setIsSizeModalOpen(false);
+      // Refresh sizes list
+      const sizes = await fetchAllPages('/products/crud/size/');
+      setAllSizes(sizes.map(size => ({
+        id: size.id,
+        name_uz: size.name_uz,
+        name_ru: size.name_ru,
+        length: size.length,
+        width: size.width,
+        height: size.height
+      })));
+    } catch (error) {
+      console.error('Failed to update size:', error);
+    }
+  };
+
+  const openSizeModal = (size?: any) => {
+    setSelectedSize(size || null);
+    setIsSizeModalOpen(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -231,15 +290,15 @@ export function EditProduct() {
     try {
       const submitFormData = new FormData();
       
-      // Basic product information
-      submitFormData.append('id', id!.toString());
-      submitFormData.append('brand', formData.brand.toString());
-      submitFormData.append('category', formData.category.toString());
-      submitFormData.append('title_uz', formData.title_uz);
-      submitFormData.append('title_ru', formData.title_ru);
-      submitFormData.append('description_uz', formData.description_uz);
-      submitFormData.append('description_ru', formData.description_ru);
-      submitFormData.append('material', formData.material.toString());
+      // Basic product information - add null checks and default values
+      submitFormData.append('id', id?.toString() || '');
+      submitFormData.append('brand', formData.brand?.toString() || '');
+      submitFormData.append('category', formData.category?.toString() || '');
+      submitFormData.append('title_uz', formData.title_uz || '');
+      submitFormData.append('title_ru', formData.title_ru || '');
+      submitFormData.append('description_uz', formData.description_uz || '');
+      submitFormData.append('description_ru', formData.description_ru || '');
+      submitFormData.append('material', formData.material?.toString() || '');
 
       // Add deleted attributes and images to form data
       deletedAttributes.forEach((id, index) => {
@@ -250,7 +309,7 @@ export function EditProduct() {
         submitFormData.append(`images_to_delete[${index}]`, id.toString());
       });
 
-      // Product attributes
+      // Product attributes - add null checks
       productAttributes.forEach((attr, index) => {
         if (attr.id) {
           submitFormData.append(`product_attributes[${index}]id`, attr.id.toString());
@@ -259,11 +318,26 @@ export function EditProduct() {
         submitFormData.append(`product_attributes[${index}]color_code`, attr.color_code || '#000000');
         submitFormData.append(`product_attributes[${index}]color_name_uz`, attr.color_name_uz || '');
         submitFormData.append(`product_attributes[${index}]color_name_ru`, attr.color_name_ru || '');
-        submitFormData.append(`product_attributes[${index}]price`, attr.price.toString());
-        submitFormData.append(`product_attributes[${index}]quantity`, attr.quantity.toString());
+        submitFormData.append(`product_attributes[${index}]price`, (attr.price || 0).toString());
+        submitFormData.append(`product_attributes[${index}]quantity`, Math.max(0, attr.quantity ?? 0).toString());
         
-        // Modified new_price handling
-        submitFormData.append(`product_attributes[${index}]new_price`, attr.new_price || '');
+        // Always send new_price as empty string if not provided
+        submitFormData.append(
+          `product_attributes[${index}]new_price`,
+          attr.new_price?.toString() || ''
+        );
+
+        // Only append selected sizes
+        if (attr.sizes && attr.sizes.length > 0) {
+          attr.sizes.forEach((sizeId: number, sizeIndex: number) => {
+            if (sizeId) { // Only append if sizeId exists
+              submitFormData.append(
+                `product_attributes[${index}]uploaded_sizes[${sizeIndex}]`, 
+                sizeId.toString()
+              );
+            }
+          });
+        }
 
         // Handle deleted images for this attribute
         const deletedImagesForAttr = deletedImages.filter(imageId => {
@@ -286,15 +360,6 @@ export function EditProduct() {
             img.image
           );
         });
-        
-        if (attr.sizes && attr.sizes.length > 0) {
-          attr.sizes.forEach((sizeId: number, sizeIndex: number) => {
-            submitFormData.append(
-              `product_attributes[${index}]uploaded_sizes[${sizeIndex}]`, 
-              sizeId.toString()
-            );
-          });
-        }
       });
 
       console.log('Submitting form data:', Object.fromEntries(submitFormData.entries()));
@@ -537,29 +602,76 @@ export function EditProduct() {
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor={`sizes-${index}`}>Размеры</Label>
-                        <div className="space-y-2 bg-white p-2 rounded max-h-40 overflow-y-auto">
+                        <div className="flex justify-between items-center mb-3">
+                          <Label htmlFor={`sizes-${index}`}>Размеры</Label>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openSizeModal()}
+                            className="h-8"
+                          >
+                            <PlusIcon className="h-4 w-4 mr-2" />
+                            Новый размер
+                          </Button>
+                        </div>
+                        <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100 max-h-[280px] overflow-y-auto">
                           {allSizes.map((size) => (
-                            <div key={size.id} className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
-                                id={`size-${index}-${size.id}`}
-                                checked={attr.sizes?.includes(size.id)}
-                                onChange={(e) => {
-                                  const checked = e.target.checked;
-                                  const currentSizes = attr.sizes || [];
-                                  const updatedSizes = checked
-                                    ? [...currentSizes, size.id]
-                                    : currentSizes.filter((id: number) => id !== size.id);
-                                  handleAttributeChange(index, 'sizes', updatedSizes);
-                                }}
-                                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                              />
-                              <label htmlFor={`size-${index}-${size.id}`} className="text-sm font-medium">
-                                {size.name_uz}
-                              </label>
+                            <div key={size.id} className="p-3 hover:bg-gray-50 transition-colors">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-3 flex-1">
+                                  <input
+                                    type="checkbox"
+                                    id={`size-${index}-${size.id}`}
+                                    checked={attr.sizes?.includes(size.id)}
+                                    onChange={(e) => {
+                                      const checked = e.target.checked;
+                                      const currentSizes = attr.sizes || [];
+                                      const updatedSizes = checked
+                                        ? [...currentSizes, size.id]
+                                        : currentSizes.filter((id: number) => id !== size.id);
+                                      handleAttributeChange(index, 'sizes', updatedSizes);
+                                    }}
+                                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                  />
+                                  <div className="flex flex-col">
+                                    <label htmlFor={`size-${index}-${size.id}`} className="text-sm font-medium">
+                                      {size.name_uz}
+                                    </label>
+                                    <span className="text-xs text-gray-500">
+                                      {size.length} × {size.width} × {size.height} см
+                                    </span>
+                                  </div>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => openSizeModal(size)}
+                                  className="h-8 px-2"
+                                >
+                                  <svg
+                                    className="h-4 w-4 text-gray-500"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                    />
+                                  </svg>
+                                </Button>
+                              </div>
                             </div>
                           ))}
+                          {allSizes.length === 0 && (
+                            <div className="p-4 text-center text-gray-500 text-sm">
+                              Нет доступных размеров
+                            </div>
+                          )}
                         </div>
                       </div>
                       
@@ -642,8 +754,12 @@ export function EditProduct() {
                           <Input
                             id={`quantity-${index}`}
                             type="number"
-                            value={attr.quantity || ''}
-                            onChange={(e) => handleAttributeChange(index, 'quantity', e.target.value)}
+                            min="0" // Prevent negative numbers
+                            value={attr.quantity ?? 0} // Use nullish coalescing
+                            onChange={(e) => {
+                              const value = Math.max(0, parseInt(e.target.value) || 0); // Ensure non-negative integer
+                              handleAttributeChange(index, 'quantity', value);
+                            }}
                           />
                         </div>
                       </div>
@@ -677,6 +793,97 @@ export function EditProduct() {
           </Button>
         </div>
       </form>
+
+      {isSizeModalOpen && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 z-50 flex items-center justify-center p-4">
+          <div className="relative bg-card rounded-lg shadow-lg p-6 max-w-md w-full border data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]">
+            <h3 className="text-lg font-semibold text-foreground mb-4">
+              {selectedSize ? 'Редактировать размер' : 'Добавить размер'}
+            </h3>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const data = {
+                name_uz: formData.get('name_uz'),
+                name_ru: formData.get('name_ru'),
+                length: formData.get('length'),
+                width: formData.get('width'),
+                height: formData.get('height'),
+              };
+              if (selectedSize) {
+                handleUpdateSize(data);
+              } else {
+                handleCreateSize(data);
+              }
+            }}>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="name_uz">Название (UZ)</Label>
+                  <Input
+                    id="name_uz"
+                    name="name_uz"
+                    defaultValue={selectedSize?.name_uz || ''}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="name_ru">Название (RU)</Label>
+                  <Input
+                    id="name_ru"
+                    name="name_ru"
+                    defaultValue={selectedSize?.name_ru || ''}
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="length">Длина</Label>
+                    <Input
+                      id="length"
+                      name="length"
+                      type="number"
+                      defaultValue={selectedSize?.length || ''}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="width">Ширина</Label>
+                    <Input
+                      id="width"
+                      name="width"
+                      type="number"
+                      defaultValue={selectedSize?.width || ''}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="height">Высота</Label>
+                    <Input
+                      id="height"
+                      name="height"
+                      type="number"
+                      defaultValue={selectedSize?.height || ''}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end space-x-4 mt-6">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsSizeModalOpen(false)}
+                  >
+                    Отмена
+                  </Button>
+                  <Button type="submit">
+                    {selectedSize ? 'Сохранить' : 'Создать'}
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

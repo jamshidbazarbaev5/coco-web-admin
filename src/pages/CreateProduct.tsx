@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { ProductForm } from '../helpers/ProductForm';
 import { useCreateProduct, createProductFormData } from '../api/products';
 import api from '../api/api';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 
 export function CreateProduct() {
@@ -23,6 +23,7 @@ export function CreateProduct() {
   const [allMaterials, setAllMaterials] = useState<any[]>([]);
   const [allSizes, setAllSizes] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
   const fetchAllPages = async (initialUrl: string) => {
     let results: any[] = [];
     let nextUrl: string | null = initialUrl;
@@ -45,6 +46,24 @@ export function CreateProduct() {
     
     return results;
   };
+
+  // Function to fetch and update sizes
+  const refreshSizes = useCallback(async () => {
+    try {
+      const sizes = await fetchAllPages('/products/crud/size/');
+      const transformedSizes = sizes.map(size => ({
+        id: size.id,
+        name_uz: size.name_uz,
+        name_ru: size.name_ru,
+        length: size.length,
+        width: size.width,
+        height: size.height
+      }));
+      setAllSizes(transformedSizes);
+    } catch (error) {
+      console.error('Error fetching sizes:', error);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -84,7 +103,10 @@ export function CreateProduct() {
         const transformedSizes = sizes.map(size => ({
           id: size.id,
           name_uz: size.name_uz,
-          name_ru: size.name_ru
+          name_ru: size.name_ru,
+          length: size.length,
+          width: size.width,
+          height: size.height
         }));
         
         // Set the transformed data
@@ -125,6 +147,7 @@ export function CreateProduct() {
         categories={allCategories}
         materials={allMaterials}
         sizes={allSizes}
+        onSizeCreate={refreshSizes}
         defaultValues={{
           brand: 0,
           category: 0,
@@ -141,7 +164,7 @@ export function CreateProduct() {
             attribute_images: [],
             sizes: [],
             price: 0,
-            new_price: 0,
+            new_price: '',
             quantity: 0
           }]
         }}

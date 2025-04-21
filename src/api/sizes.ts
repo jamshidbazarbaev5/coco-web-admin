@@ -5,9 +5,9 @@ export interface Size {
   id?: number;
   name_uz: string;
   name_ru: string;
-  length: string;
-  width: string;
-  height: string;
+  length: number;
+  width: number;
+  height: number;
 }
 
 // API endpoints
